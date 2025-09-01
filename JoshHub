@@ -1,41 +1,130 @@
---// Josh Control Panel (Full Features)
---// Owner: Joshroxas
+--// JoshhubScript Control Panel (Fire Theme + Small Frame)
+--// Owner: JoshroxasScript
 
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
-local UserInputService = game:GetService("UserInputService")
-local RunService = game:GetService("RunService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local UIS = game:GetService("UserInputService")
+local RS = game:GetService("RunService")
 
 -- Vars
+local acceptEvent = ReplicatedStorage:WaitForChild("GameEvents"):WaitForChild("AcceptPetGift")
+local AcceptedGifts = {}
 getgenv().AutoAccept = false
 local noclip = false
 local infJump = false
 local walkspeed = 150
 
--- Auto Accept Gift
-local acceptEvent = ReplicatedStorage:WaitForChild("GameEvents"):WaitForChild("AcceptPetGift")
-spawn(function()
-    while task.wait(1) do
-        if getgenv().AutoAccept then
-            for _,v in pairs(ReplicatedStorage.GameEvents.AcceptPetGift:GetChildren()) do
-                pcall(function()
-                    acceptEvent:FireServer(v)
+-- Gift Listener
+for _, remote in ipairs(ReplicatedStorage:GetDescendants()) do
+    if remote:IsA("RemoteEvent") and string.lower(remote.Name):find("gift") then
+        remote.OnClientEvent:Connect(function(giftId, petInfo, sender)
+            if getgenv().AutoAccept and not AcceptedGifts[giftId] then
+                AcceptedGifts[giftId] = true
+                task.defer(function()
+                    acceptEvent:FireServer(true, giftId)
+                    warn("🔥 Auto Accepted gift from:", sender, "(GiftID:", giftId, ")")
+                    local gui = LocalPlayer:WaitForChild("PlayerGui")
+                    for _, v in pairs(gui:GetDescendants()) do
+                        if (v:IsA("Frame") or v:IsA("TextLabel") or v:IsA("ImageLabel")) and tostring(v.Name):lower():find("gift") then
+                            v:Destroy()
+                        end
+                    end
                 end)
             end
+        end)
+    end
+end
+
+--// GUI
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "JoshteleporterScript"
+ScreenGui.Parent = game:GetService("CoreGui")
+
+-- Main Frame
+local MainFrame = Instance.new("Frame")
+MainFrame.Size = UDim2.new(0, 220, 0, 280)
+MainFrame.Position = UDim2.new(0.05, 0, 0.25, 0)
+MainFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+MainFrame.Active = true
+MainFrame.Draggable = true
+MainFrame.Parent = ScreenGui
+Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0,12)
+
+-- Shadow
+local Shadow = Instance.new("ImageLabel")
+Shadow.Size = UDim2.new(1, 40, 1, 40)
+Shadow.Position = UDim2.new(0, -20, 0, -20)
+Shadow.BackgroundTransparency = 1
+Shadow.Image = "rbxassetid://1316045217"
+Shadow.ImageColor3 = Color3.fromRGB(0,0,0)
+Shadow.ImageTransparency = 0.5
+Shadow.ZIndex = -1
+Shadow.Parent = MainFrame
+
+-- Gradient
+local UIGradient = Instance.new("UIGradient", MainFrame)
+UIGradient.Color = ColorSequence.new{
+    ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 100, 50)),
+    ColorSequenceKeypoint.new(1, Color3.fromRGB(60, 20, 20))
+}
+UIGradient.Rotation = 90
+
+-- Title
+local Title = Instance.new("TextLabel")
+Title.Size = UDim2.new(1, -35, 0, 35)
+Title.Position = UDim2.new(0,8,0,0)
+Title.BackgroundTransparency = 1
+Title.Text = "🔥 JoshroxasScript"
+Title.TextColor3 = Color3.fromRGB(255,200,100)
+Title.Font = Enum.Font.Fantasy
+Title.TextSize = 18
+Title.TextXAlignment = Enum.TextXAlignment.Left
+Title.Parent = MainFrame
+
+local TitleGlow = Title:Clone()
+TitleGlow.TextColor3 = Color3.fromRGB(255,80,20)
+TitleGlow.TextTransparency = 0.6
+TitleGlow.ZIndex = -1
+TitleGlow.Parent = MainFrame
+
+-- Minimize Button
+local MinBtn = Instance.new("TextButton")
+MinBtn.Size = UDim2.new(0,28,0,28)
+MinBtn.Position = UDim2.new(1,-32,0,4)
+MinBtn.BackgroundColor3 = Color3.fromRGB(50,25,25)
+MinBtn.TextColor3 = Color3.fromRGB(255,180,120)
+MinBtn.Text = "-"
+MinBtn.Font = Enum.Font.SourceSansBold
+MinBtn.TextSize = 20
+MinBtn.Parent = MainFrame
+Instance.new("UICorner", MinBtn).CornerRadius = UDim.new(0,6)
+
+local Minimized = false
+MinBtn.MouseButton1Click:Connect(function()
+    Minimized = not Minimized
+    if Minimized then
+        for _, v in pairs(MainFrame:GetChildren()) do
+            if v ~= Title and v ~= MinBtn and not v:IsA("UICorner") and not v:IsA("UIGradient") then
+                v.Visible = false
+            end
         end
+        MainFrame.Size = UDim2.new(0,220,0,40)
+        MinBtn.Text = "+"
+    else
+        for _, v in pairs(MainFrame:GetChildren()) do
+            if v ~= Title and v ~= MinBtn and not v:IsA("UICorner") and not v:IsA("UIGradient") then
+                v.Visible = true
+            end
+        end
+        MainFrame.Size = UDim2.new(0,220,0,280)
+        MinBtn.Text = "-"
     end
 end)
 
--- UI MainFrame (example frame, palagay mo na gawa na yung MainFrame mo)
-local MainFrame = Instance.new("Frame")
-MainFrame.Size = UDim2.new(0,250,0,400)
-MainFrame.Position = UDim2.new(0.5,-125,0.5,-200)
-MainFrame.BackgroundColor3 = Color3.fromRGB(30,15,15)
-MainFrame.Parent = game.CoreGui
-
--- Switch Label + Switch
+-- Auto Accept Toggle
 local SwitchLabel = Instance.new("TextLabel")
+SwitchLabel.Size = UDim2.new(0,130,0,25)
 SwitchLabel.Position = UDim2.new(0,10,0,45)
 SwitchLabel.BackgroundTransparency = 1
 SwitchLabel.Text = "Auto Accept Gift"
@@ -52,18 +141,16 @@ SwitchFrame.BackgroundColor3 = Color3.fromRGB(80,40,40)
 SwitchFrame.BorderSizePixel = 0
 SwitchFrame.Text = ""
 SwitchFrame.Parent = MainFrame
-
 local Knob = Instance.new("Frame")
 Knob.Size = UDim2.new(0,20,0,20)
 Knob.Position = UDim2.new(0,1,0,1)
 Knob.BackgroundColor3 = Color3.fromRGB(200,50,50)
 Knob.BorderSizePixel = 0
 Knob.Parent = SwitchFrame
+Instance.new("UICorner", SwitchFrame).CornerRadius = UDim.new(0,12)
+Instance.new("UICorner", Knob).CornerRadius = UDim.new(0,12)
 
-Instance.new("UICorner",SwitchFrame).CornerRadius = UDim.new(0,12)
-Instance.new("UICorner",Knob).CornerRadius = UDim.new(0,12)
-
-local function ToggleSwitch()
+SwitchFrame.MouseButton1Click:Connect(function()
     getgenv().AutoAccept = not getgenv().AutoAccept
     if getgenv().AutoAccept then
         Knob:TweenPosition(UDim2.new(0,23,0,1),"Out","Sine",0.2,true)
@@ -72,20 +159,17 @@ local function ToggleSwitch()
         Knob:TweenPosition(UDim2.new(0,1,0,1),"Out","Sine",0.2,true)
         Knob.BackgroundColor3 = Color3.fromRGB(200,50,50)
     end
-end
-SwitchFrame.MouseButton1Click:Connect(ToggleSwitch)
+end)
 
--- Player List + Teleport
+-- Player list & teleport
 local PlayerList = Instance.new("ScrollingFrame")
-PlayerList.Size = UDim2.new(1,-20,0,140)
+PlayerList.Size = UDim2.new(1,-20,0,100)
 PlayerList.Position = UDim2.new(0,10,0,80)
 PlayerList.BackgroundTransparency = 1
 PlayerList.ScrollBarThickness = 4
 PlayerList.Parent = MainFrame
-
-local UIList = Instance.new("UIListLayout")
+local UIList = Instance.new("UIListLayout", PlayerList)
 UIList.Padding = UDim.new(0,4)
-UIList.Parent = PlayerList
 
 local function teleportToPlayer(target)
     if target.Character and target.Character:FindFirstChild("HumanoidRootPart") and
@@ -109,9 +193,6 @@ local function refreshPlayerList()
             Btn.Text = plr.DisplayName
             Btn.Parent = PlayerList
             Instance.new("UICorner", Btn).CornerRadius = UDim.new(0,6)
-
-            Btn.MouseEnter:Connect(function() Btn.BackgroundColor3 = Color3.fromRGB(255,80,40) end)
-            Btn.MouseLeave:Connect(function() Btn.BackgroundColor3 = Color3.fromRGB(60,30,30) end)
             Btn.MouseButton1Click:Connect(function() teleportToPlayer(plr) end)
         end
     end
@@ -121,44 +202,7 @@ Players.PlayerAdded:Connect(refreshPlayerList)
 Players.PlayerRemoving:Connect(refreshPlayerList)
 refreshPlayerList()
 
--- NoClip
-UserInputService.InputBegan:Connect(function(input)
-    if input.KeyCode == Enum.KeyCode.N then
-        noclip = not noclip
-    end
-end)
-
-RunService.Stepped:Connect(function()
-    if noclip and LocalPlayer.Character then
-        for _, part in pairs(LocalPlayer.Character:GetDescendants()) do
-            if part:IsA("BasePart") and part.CanCollide then
-                part.CanCollide = false
-            end
-        end
-    end
-end)
-
--- Infinite Jump
-UserInputService.JumpRequest:Connect(function()
-    if infJump and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
-        LocalPlayer.Character.Humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
-    end
-end)
-
-UserInputService.InputBegan:Connect(function(input)
-    if input.KeyCode == Enum.KeyCode.J then
-        infJump = not infJump
-    end
-end)
-
--- Speed Hack
-RunService.Heartbeat:Connect(function()
-    if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
-        LocalPlayer.Character.Humanoid.WalkSpeed = walkspeed
-    end
-end)
-
--- ESP with Username
+-- ESP Username
 local function createESP(plr)
     if plr.Character and not plr.Character:FindFirstChild("ESPName") then
         local billboard = Instance.new("BillboardGui", plr.Character)
@@ -166,7 +210,6 @@ local function createESP(plr)
         billboard.Adornee = plr.Character:WaitForChild("Head")
         billboard.Size = UDim2.new(0,200,0,50)
         billboard.AlwaysOnTop = true
-
         local nameLabel = Instance.new("TextLabel", billboard)
         nameLabel.Size = UDim2.new(1,0,1,0)
         nameLabel.BackgroundTransparency = 1
@@ -176,16 +219,40 @@ local function createESP(plr)
         nameLabel.TextSize = 14
     end
 end
-
 for _,plr in pairs(Players:GetPlayers()) do
     if plr ~= LocalPlayer then
         plr.CharacterAdded:Connect(function() task.wait(1) createESP(plr) end)
         if plr.Character then createESP(plr) end
     end
 end
-
 Players.PlayerAdded:Connect(function(plr)
     plr.CharacterAdded:Connect(function() task.wait(1) createESP(plr) end)
+end)
+
+-- NoClip + Inf Jump + Speed
+UIS.InputBegan:Connect(function(input)
+    if input.KeyCode == Enum.KeyCode.N then
+        noclip = not noclip
+    elseif input.KeyCode == Enum.KeyCode.J then
+        infJump = not infJump
+    end
+end)
+RS.Stepped:Connect(function()
+    if noclip and LocalPlayer.Character then
+        for _, part in pairs(LocalPlayer.Character:GetDescendants()) do
+            if part:IsA("BasePart") then part.CanCollide = false end
+        end
+    end
+end)
+UIS.JumpRequest:Connect(function()
+    if infJump and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
+        LocalPlayer.Character.Humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+    end
+end)
+RS.Heartbeat:Connect(function()
+    if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
+        LocalPlayer.Character.Humanoid.WalkSpeed = walkspeed
+    end
 end)
 
 -- Leave Button
@@ -199,7 +266,6 @@ LeaveButton.Font = Enum.Font.SourceSansBold
 LeaveButton.TextSize = 13
 LeaveButton.Parent = MainFrame
 Instance.new("UICorner", LeaveButton).CornerRadius = UDim.new(0,6)
-
 LeaveButton.MouseButton1Click:Connect(function()
     LocalPlayer:Kick("Tangina moka ok na.")
 end)
