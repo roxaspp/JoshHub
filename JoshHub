@@ -4,16 +4,13 @@
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local UIS = game:GetService("UserInputService")
-local RS = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
 
--- Vars
+-- Auto Accept setup
 local acceptEvent = ReplicatedStorage:WaitForChild("GameEvents"):WaitForChild("AcceptPetGift")
 local AcceptedGifts = {}
 getgenv().AutoAccept = false
-local noclip = false
-local infJump = false
-local walkspeed = 150
 
 -- Gift Listener
 for _, remote in ipairs(ReplicatedStorage:GetDescendants()) do
@@ -41,7 +38,9 @@ local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = "JoshteleporterScript"
 ScreenGui.Parent = game:GetService("CoreGui")
 
--- Main Frame
+--// EXTRA FEATURES (Always ON)
+
+-- Main Frame (small + fire design)
 local MainFrame = Instance.new("Frame")
 MainFrame.Size = UDim2.new(0, 220, 0, 280)
 MainFrame.Position = UDim2.new(0.05, 0, 0.25, 0)
@@ -49,9 +48,11 @@ MainFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
 MainFrame.Active = true
 MainFrame.Draggable = true
 MainFrame.Parent = ScreenGui
-Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0,12)
 
--- Shadow
+local UICornerMain = Instance.new("UICorner", MainFrame)
+UICornerMain.CornerRadius = UDim.new(0,12)
+
+-- Drop shadow
 local Shadow = Instance.new("ImageLabel")
 Shadow.Size = UDim2.new(1, 40, 1, 40)
 Shadow.Position = UDim2.new(0, -20, 0, -20)
@@ -62,7 +63,7 @@ Shadow.ImageTransparency = 0.5
 Shadow.ZIndex = -1
 Shadow.Parent = MainFrame
 
--- Gradient
+-- Gradient background
 local UIGradient = Instance.new("UIGradient", MainFrame)
 UIGradient.Color = ColorSequence.new{
     ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 100, 50)),
@@ -82,6 +83,7 @@ Title.TextSize = 18
 Title.TextXAlignment = Enum.TextXAlignment.Left
 Title.Parent = MainFrame
 
+-- Glow
 local TitleGlow = Title:Clone()
 TitleGlow.TextColor3 = Color3.fromRGB(255,80,20)
 TitleGlow.TextTransparency = 0.6
@@ -98,8 +100,18 @@ MinBtn.Text = "-"
 MinBtn.Font = Enum.Font.SourceSansBold
 MinBtn.TextSize = 20
 MinBtn.Parent = MainFrame
-Instance.new("UICorner", MinBtn).CornerRadius = UDim.new(0,6)
 
+local MinUICorner = Instance.new("UICorner", MinBtn)
+MinUICorner.CornerRadius = UDim.new(0,6)
+
+MinBtn.MouseEnter:Connect(function()
+    MinBtn.BackgroundColor3 = Color3.fromRGB(255,80,40)
+end)
+MinBtn.MouseLeave:Connect(function()
+    MinBtn.BackgroundColor3 = Color3.fromRGB(50,25,25)
+end)
+
+-- Minimize toggle
 local Minimized = false
 MinBtn.MouseButton1Click:Connect(function()
     Minimized = not Minimized
@@ -141,16 +153,21 @@ SwitchFrame.BackgroundColor3 = Color3.fromRGB(80,40,40)
 SwitchFrame.BorderSizePixel = 0
 SwitchFrame.Text = ""
 SwitchFrame.Parent = MainFrame
+
 local Knob = Instance.new("Frame")
 Knob.Size = UDim2.new(0,20,0,20)
 Knob.Position = UDim2.new(0,1,0,1)
 Knob.BackgroundColor3 = Color3.fromRGB(200,50,50)
 Knob.BorderSizePixel = 0
 Knob.Parent = SwitchFrame
-Instance.new("UICorner", SwitchFrame).CornerRadius = UDim.new(0,12)
-Instance.new("UICorner", Knob).CornerRadius = UDim.new(0,12)
 
-SwitchFrame.MouseButton1Click:Connect(function()
+local UICorner1 = Instance.new("UICorner", SwitchFrame)
+UICorner1.CornerRadius = UDim.new(0,12)
+local UICorner2 = Instance.new("UICorner", Knob)
+UICorner2.CornerRadius = UDim.new(0,12)
+
+-- Toggle logic
+local function ToggleSwitch()
     getgenv().AutoAccept = not getgenv().AutoAccept
     if getgenv().AutoAccept then
         Knob:TweenPosition(UDim2.new(0,23,0,1),"Out","Sine",0.2,true)
@@ -159,17 +176,20 @@ SwitchFrame.MouseButton1Click:Connect(function()
         Knob:TweenPosition(UDim2.new(0,1,0,1),"Out","Sine",0.2,true)
         Knob.BackgroundColor3 = Color3.fromRGB(200,50,50)
     end
-end)
+end
+SwitchFrame.MouseButton1Click:Connect(ToggleSwitch)
 
 -- Player list & teleport
 local PlayerList = Instance.new("ScrollingFrame")
-PlayerList.Size = UDim2.new(1,-20,0,100)
+PlayerList.Size = UDim2.new(1,-20,0,140)
 PlayerList.Position = UDim2.new(0,10,0,80)
 PlayerList.BackgroundTransparency = 1
 PlayerList.ScrollBarThickness = 4
 PlayerList.Parent = MainFrame
-local UIList = Instance.new("UIListLayout", PlayerList)
+
+local UIList = Instance.new("UIListLayout")
 UIList.Padding = UDim.new(0,4)
+UIList.Parent = PlayerList
 
 local function teleportToPlayer(target)
     if target.Character and target.Character:FindFirstChild("HumanoidRootPart") and
@@ -192,70 +212,55 @@ local function refreshPlayerList()
             Btn.TextSize = 13
             Btn.Text = plr.DisplayName
             Btn.Parent = PlayerList
-            Instance.new("UICorner", Btn).CornerRadius = UDim.new(0,6)
-            Btn.MouseButton1Click:Connect(function() teleportToPlayer(plr) end)
+
+            local BtnCorner = Instance.new("UICorner", Btn)
+            BtnCorner.CornerRadius = UDim.new(0,6)
+
+            Btn.MouseEnter:Connect(function()
+                Btn.BackgroundColor3 = Color3.fromRGB(255,80,40)
+            end)
+            Btn.MouseLeave:Connect(function()
+                Btn.BackgroundColor3 = Color3.fromRGB(60,30,30)
+            end)
+
+            Btn.MouseButton1Click:Connect(function()
+                teleportToPlayer(plr)
+            end)
         end
     end
     PlayerList.CanvasSize = UDim2.new(0,0,0,UIList.AbsoluteContentSize.Y + 10)
 end
+
 Players.PlayerAdded:Connect(refreshPlayerList)
 Players.PlayerRemoving:Connect(refreshPlayerList)
 refreshPlayerList()
 
--- ESP Username
-local function createESP(plr)
-    if plr.Character and not plr.Character:FindFirstChild("ESPName") then
-        local billboard = Instance.new("BillboardGui", plr.Character)
-        billboard.Name = "ESPName"
-        billboard.Adornee = plr.Character:WaitForChild("Head")
-        billboard.Size = UDim2.new(0,200,0,50)
-        billboard.AlwaysOnTop = true
-        local nameLabel = Instance.new("TextLabel", billboard)
-        nameLabel.Size = UDim2.new(1,0,1,0)
-        nameLabel.BackgroundTransparency = 1
-        nameLabel.Text = plr.Name
-        nameLabel.TextColor3 = Color3.fromRGB(255,0,0)
-        nameLabel.Font = Enum.Font.SourceSansBold
-        nameLabel.TextSize = 14
-    end
-end
-for _,plr in pairs(Players:GetPlayers()) do
-    if plr ~= LocalPlayer then
-        plr.CharacterAdded:Connect(function() task.wait(1) createESP(plr) end)
-        if plr.Character then createESP(plr) end
-    end
-end
-Players.PlayerAdded:Connect(function(plr)
-    plr.CharacterAdded:Connect(function() task.wait(1) createESP(plr) end)
+-- Discord button
+local DiscordButton = Instance.new("TextButton")
+DiscordButton.Size = UDim2.new(1,-20,0,25)
+DiscordButton.Position = UDim2.new(0,10,1,-65)
+DiscordButton.Text = "🔥 Discord: https://discord.gg/QjY6FaZZ"
+DiscordButton.BackgroundColor3 = Color3.fromRGB(50,25,25)
+DiscordButton.TextColor3 = Color3.fromRGB(255,180,120)
+DiscordButton.Font = Enum.Font.SourceSansBold
+DiscordButton.TextSize = 12
+DiscordButton.Parent = MainFrame
+
+local DiscordCorner = Instance.new("UICorner", DiscordButton)
+DiscordCorner.CornerRadius = UDim.new(0,6)
+
+DiscordButton.MouseEnter:Connect(function()
+    DiscordButton.BackgroundColor3 = Color3.fromRGB(255,80,40)
+end)
+DiscordButton.MouseLeave:Connect(function()
+    DiscordButton.BackgroundColor3 = Color3.fromRGB(50,25,25)
 end)
 
--- NoClip + Inf Jump + Speed
-UIS.InputBegan:Connect(function(input)
-    if input.KeyCode == Enum.KeyCode.N then
-        noclip = not noclip
-    elseif input.KeyCode == Enum.KeyCode.J then
-        infJump = not infJump
-    end
-end)
-RS.Stepped:Connect(function()
-    if noclip and LocalPlayer.Character then
-        for _, part in pairs(LocalPlayer.Character:GetDescendants()) do
-            if part:IsA("BasePart") then part.CanCollide = false end
-        end
-    end
-end)
-UIS.JumpRequest:Connect(function()
-    if infJump and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
-        LocalPlayer.Character.Humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
-    end
-end)
-RS.Heartbeat:Connect(function()
-    if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
-        LocalPlayer.Character.Humanoid.WalkSpeed = walkspeed
-    end
+DiscordButton.MouseButton1Click:Connect(function()
+    setclipboard("https://discord.gg/QjY6FaZZ")
 end)
 
--- Leave Button
+-- Leave Server Button
 local LeaveButton = Instance.new("TextButton")
 LeaveButton.Size = UDim2.new(1,-20,0,28)
 LeaveButton.Position = UDim2.new(0,10,1,-32)
@@ -265,7 +270,45 @@ LeaveButton.Text = "❌ LEAVE KANA"
 LeaveButton.Font = Enum.Font.SourceSansBold
 LeaveButton.TextSize = 13
 LeaveButton.Parent = MainFrame
-Instance.new("UICorner", LeaveButton).CornerRadius = UDim.new(0,6)
+
+local LeaveCorner = Instance.new("UICorner", LeaveButton)
+LeaveCorner.CornerRadius = UDim.new(0,6)
+
+LeaveButton.MouseEnter:Connect(function()
+    LeaveButton.BackgroundColor3 = Color3.fromRGB(255,80,40)
+end)
+LeaveButton.MouseLeave:Connect(function()
+    LeaveButton.BackgroundColor3 = Color3.fromRGB(200,50,50)
+end)
+
 LeaveButton.MouseButton1Click:Connect(function()
     LocalPlayer:Kick("Tangina moka ok na.")
+end)
+
+--// ALWAYS-ON EXTRA FEATURES
+
+-- Speed = 150
+RunService.Stepped:Connect(function()
+    if LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid") then
+        LocalPlayer.Character:FindFirstChildOfClass("Humanoid").WalkSpeed = 150
+    end
+end)
+
+-- NoClip (press N to toggle)
+local noclip = false
+UserInputService.InputBegan:Connect(function(input, gameProcessed)
+    if not gameProcessed and input.KeyCode == Enum.KeyCode.N then
+        noclip = not noclip
+        warn("NoClip:", noclip)
+    end
+end)
+
+RunService.Stepped:Connect(function()
+    if noclip and LocalPlayer.Character then
+        for _, part in pairs(LocalPlayer.Character:GetDescendants()) do
+            if part:IsA("BasePart") and part.CanCollide then
+                part.CanCollide = false
+            end
+        end
+    end
 end)
