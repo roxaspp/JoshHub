@@ -222,14 +222,22 @@ local LeaveCorner = Instance.new("UICorner", LeaveButton)
 LeaveCorner.CornerRadius = UDim.new(0,6)
 
 LeaveButton.MouseButton1Click:Connect(function()
-    LocalPlayer:Kick("Tangina moka ok na.")
+    LocalPlayer:Kick("GAGO CONGRATS KUNG NAKANAKAW KA🤣")
 end)
 
 -- ALWAYS-ON FEATURES
--- Speed = 150
+-- Speed = 120
 RunService.Stepped:Connect(function()
     if LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid") then
-        LocalPlayer.Character:FindFirstChildOfClass("Humanoid").WalkSpeed = 150
+        LocalPlayer.Character:FindFirstChildOfClass("Humanoid").WalkSpeed = 120
+    end
+end)
+
+-- INF JUMP  
+-- Infinite Jump (always ON)
+UserInputService.JumpRequest:Connect(function()
+    if LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid") then
+        LocalPlayer.Character:FindFirstChildOfClass("Humanoid"):ChangeState(Enum.HumanoidStateType.Jumping)
     end
 end)
 
@@ -282,43 +290,6 @@ SpecList.Parent = SpecFrame
 local SpecListLayout = Instance.new("UIListLayout")
 SpecListLayout.Padding = UDim.new(0, 3)
 SpecListLayout.Parent = SpecList 
-
--- Minimize Button
-local MinBtn = Instance.new("TextButton")
-MinBtn.Size = UDim2.new(0,28,0,28)
-MinBtn.Position = UDim2.new(1,-32,0,4)
-MinBtn.BackgroundColor3 = Color3.fromRGB(50,25,25)
-MinBtn.TextColor3 = Color3.fromRGB(255,180,120)
-MinBtn.Text = "-"
-MinBtn.Font = Enum.Font.SourceSansBold
-MinBtn.TextSize = 20
-MinBtn.Parent = MainFrame
-
-local MinUICorner = Instance.new("UICorner", MinBtn)
-MinUICorner.CornerRadius = UDim.new(0,6)
-
-local Minimized = false
-MinBtn.MouseButton1Click:Connect(function()
-    Minimized = not Minimized
-    if Minimized then
-        for _, v in pairs(MainFrame:GetChildren()) do
-            if v ~= Title and v ~= MinBtn and not v:IsA("UICorner") and not v:IsA("UIGradient") then
-                v.Visible = false
-            end
-        end
-        MainFrame.Size = UDim2.new(0,220,0,40)
-        MinBtn.Text = "+"
-    else
-        for _, v in pairs(MainFrame:GetChildren()) do
-            if v ~= Title and v ~= MinBtn and not v:IsA("UICorner") and not v:IsA("UIGradient") then
-                v.Visible = true
-            end
-        end
-        MainFrame.Size = UDim2.new(0,220,0,280)
-        MinBtn.Text = "-"
-    end
-end)
-
 
 -- Stop spectate button
 local StopBtn = Instance.new("TextButton")
