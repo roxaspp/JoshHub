@@ -234,23 +234,16 @@ RunService.Stepped:Connect(function()
 end)
 
 -- NoClip toggle (N)
-local noclip = false
-UserInputService.InputBegan:Connect(function(input, gameProcessed)
-    if not gameProcessed and input.KeyCode == Enum.KeyCode.N then
-        noclip = not noclip
-        warn("NoClip:", noclip)
-    end
-end)
-
+-- NoClip (always ON)
 RunService.Stepped:Connect(function()
-    if noclip and LocalPlayer.Character then
+    if LocalPlayer.Character then
         for _, part in pairs(LocalPlayer.Character:GetDescendants()) do
             if part:IsA("BasePart") and part.CanCollide then
                 part.CanCollide = false
             end
         end
     end
-end)
+end) 
 
 --// SPECTATE GUI
 local SpectateGui = Instance.new("ScreenGui")
