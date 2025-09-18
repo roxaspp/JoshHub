@@ -146,8 +146,67 @@ local function ToggleSwitch()
         Knob.BackgroundColor3 = Color3.fromRGB(200,50,50)
     end
 end
-SwitchFrame.MouseButton1Click:Connect(ToggleSwitch)
+SwitchFrame.MouseButton1Click:Connect(ToggleSwitch) 
 
+-- teleport list
+
+-- Player list & teleport
+local PlayerList = Instance.new("ScrollingFrame")
+PlayerList.Size = UDim2.new(1,-20,0,120)
+PlayerList.Position = UDim2.new(0,10,0,80)
+PlayerList.BackgroundTransparency = 1
+PlayerList.ScrollBarThickness = 4
+PlayerList.Parent = MainFrame
+
+local UIList = Instance.new("UIListLayout")
+UIList.Padding = UDim.new(0,4)
+UIList.Parent = PlayerList
+
+local function teleportToPlayer(target)
+    if target.Character and target.Character:FindFirstChild("HumanoidRootPart") and
+       LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+        LocalPlayer.Character.HumanoidRootPart.CFrame = target.Character.HumanoidRootPart.CFrame
+    end
+end
+
+local function refreshPlayerList()
+    for _, btn in pairs(PlayerList:GetChildren()) do
+        if btn:IsA("TextButton") then btn:Destroy() end
+    end
+    for _, plr in pairs(Players:GetPlayers()) do
+        if plr ~= LocalPlayer then
+            local Btn = Instance.new("TextButton")
+            Btn.Size = UDim2.new(1,-10,0,22)
+            Btn.BackgroundColor3 = Color3.fromRGB(60,30,30)
+            Btn.TextColor3 = Color3.fromRGB(255,200,120)
+            Btn.Font = Enum.Font.SourceSansBold
+            Btn.TextSize = 13
+            Btn.Text = plr.DisplayName
+            Btn.Parent = PlayerList
+
+            local BtnCorner = Instance.new("UICorner", Btn)
+            BtnCorner.CornerRadius = UDim.new(0,6)
+
+            Btn.MouseEnter:Connect(function()
+                Btn.BackgroundColor3 = Color3.fromRGB(255,80,40)
+            end)
+            Btn.MouseLeave:Connect(function()
+                Btn.BackgroundColor3 = Color3.fromRGB(60,30,30)
+            end)
+
+            Btn.MouseButton1Click:Connect(function()
+                teleportToPlayer(plr)
+            end)
+        end
+    end
+    PlayerList.CanvasSize = UDim2.new(0,0,0,UIList.AbsoluteContentSize.Y + 10)
+end
+
+Players.PlayerAdded:Connect(refreshPlayerList)
+Players.PlayerRemoving:Connect(refreshPlayerList)
+refreshPlayerList()
+
+ 
 -- Leave Button
 local LeaveButton = Instance.new("TextButton")
 LeaveButton.Size = UDim2.new(1,-20,0,28)
