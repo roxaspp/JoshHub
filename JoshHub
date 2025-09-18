@@ -1,4 +1,4 @@
---// JoshhubScript Control Panel (Fire Theme + Small Frame)
+--// JoshhubScript Control Panel (Fire Theme + Small Frame + Spectate GUI)
 --// Owner: JoshroxasScript
 
 local Players = game:GetService("Players")
@@ -35,12 +35,10 @@ end
 
 --// GUI
 local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "JoshteleporterScript"
+ScreenGui.Name = "JoshhubScript"
 ScreenGui.Parent = game:GetService("CoreGui")
 
---// EXTRA FEATURES (Always ON)
-
--- Main Frame (small + fire design)
+-- Main Frame (CP)
 local MainFrame = Instance.new("Frame")
 MainFrame.Size = UDim2.new(0, 220, 0, 280)
 MainFrame.Position = UDim2.new(0.05, 0, 0.25, 0)
@@ -51,17 +49,6 @@ MainFrame.Parent = ScreenGui
 
 local UICornerMain = Instance.new("UICorner", MainFrame)
 UICornerMain.CornerRadius = UDim.new(0,12)
-
--- Drop shadow
-local Shadow = Instance.new("ImageLabel")
-Shadow.Size = UDim2.new(1, 40, 1, 40)
-Shadow.Position = UDim2.new(0, -20, 0, -20)
-Shadow.BackgroundTransparency = 1
-Shadow.Image = "rbxassetid://1316045217"
-Shadow.ImageColor3 = Color3.fromRGB(0,0,0)
-Shadow.ImageTransparency = 0.5
-Shadow.ZIndex = -1
-Shadow.Parent = MainFrame
 
 -- Gradient background
 local UIGradient = Instance.new("UIGradient", MainFrame)
@@ -83,13 +70,6 @@ Title.TextSize = 18
 Title.TextXAlignment = Enum.TextXAlignment.Left
 Title.Parent = MainFrame
 
--- Glow
-local TitleGlow = Title:Clone()
-TitleGlow.TextColor3 = Color3.fromRGB(255,80,20)
-TitleGlow.TextTransparency = 0.6
-TitleGlow.ZIndex = -1
-TitleGlow.Parent = MainFrame
-
 -- Minimize Button
 local MinBtn = Instance.new("TextButton")
 MinBtn.Size = UDim2.new(0,28,0,28)
@@ -104,14 +84,6 @@ MinBtn.Parent = MainFrame
 local MinUICorner = Instance.new("UICorner", MinBtn)
 MinUICorner.CornerRadius = UDim.new(0,6)
 
-MinBtn.MouseEnter:Connect(function()
-    MinBtn.BackgroundColor3 = Color3.fromRGB(255,80,40)
-end)
-MinBtn.MouseLeave:Connect(function()
-    MinBtn.BackgroundColor3 = Color3.fromRGB(50,25,25)
-end)
-
--- Minimize toggle
 local Minimized = false
 MinBtn.MouseButton1Click:Connect(function()
     Minimized = not Minimized
@@ -150,7 +122,6 @@ local SwitchFrame = Instance.new("TextButton")
 SwitchFrame.Size = UDim2.new(0,45,0,22)
 SwitchFrame.Position = UDim2.new(0,150,0,47)
 SwitchFrame.BackgroundColor3 = Color3.fromRGB(80,40,40)
-SwitchFrame.BorderSizePixel = 0
 SwitchFrame.Text = ""
 SwitchFrame.Parent = MainFrame
 
@@ -158,7 +129,6 @@ local Knob = Instance.new("Frame")
 Knob.Size = UDim2.new(0,20,0,20)
 Knob.Position = UDim2.new(0,1,0,1)
 Knob.BackgroundColor3 = Color3.fromRGB(200,50,50)
-Knob.BorderSizePixel = 0
 Knob.Parent = SwitchFrame
 
 local UICorner1 = Instance.new("UICorner", SwitchFrame)
@@ -166,7 +136,6 @@ UICorner1.CornerRadius = UDim.new(0,12)
 local UICorner2 = Instance.new("UICorner", Knob)
 UICorner2.CornerRadius = UDim.new(0,12)
 
--- Toggle logic
 local function ToggleSwitch()
     getgenv().AutoAccept = not getgenv().AutoAccept
     if getgenv().AutoAccept then
@@ -179,88 +148,7 @@ local function ToggleSwitch()
 end
 SwitchFrame.MouseButton1Click:Connect(ToggleSwitch)
 
--- Player list & teleport
-local PlayerList = Instance.new("ScrollingFrame")
-PlayerList.Size = UDim2.new(1,-20,0,140)
-PlayerList.Position = UDim2.new(0,10,0,80)
-PlayerList.BackgroundTransparency = 1
-PlayerList.ScrollBarThickness = 4
-PlayerList.Parent = MainFrame
-
-local UIList = Instance.new("UIListLayout")
-UIList.Padding = UDim.new(0,4)
-UIList.Parent = PlayerList
-
-local function teleportToPlayer(target)
-    if target.Character and target.Character:FindFirstChild("HumanoidRootPart") and
-       LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
-        LocalPlayer.Character.HumanoidRootPart.CFrame = target.Character.HumanoidRootPart.CFrame
-    end
-end
-
-local function refreshPlayerList()
-    for _, btn in pairs(PlayerList:GetChildren()) do
-        if btn:IsA("TextButton") then btn:Destroy() end
-    end
-    for _, plr in pairs(Players:GetPlayers()) do
-        if plr ~= LocalPlayer then
-            local Btn = Instance.new("TextButton")
-            Btn.Size = UDim2.new(1,-10,0,22)
-            Btn.BackgroundColor3 = Color3.fromRGB(60,30,30)
-            Btn.TextColor3 = Color3.fromRGB(255,200,120)
-            Btn.Font = Enum.Font.SourceSansBold
-            Btn.TextSize = 13
-            Btn.Text = plr.DisplayName
-            Btn.Parent = PlayerList
-
-            local BtnCorner = Instance.new("UICorner", Btn)
-            BtnCorner.CornerRadius = UDim.new(0,6)
-
-            Btn.MouseEnter:Connect(function()
-                Btn.BackgroundColor3 = Color3.fromRGB(255,80,40)
-            end)
-            Btn.MouseLeave:Connect(function()
-                Btn.BackgroundColor3 = Color3.fromRGB(60,30,30)
-            end)
-
-            Btn.MouseButton1Click:Connect(function()
-                teleportToPlayer(plr)
-            end)
-        end
-    end
-    PlayerList.CanvasSize = UDim2.new(0,0,0,UIList.AbsoluteContentSize.Y + 10)
-end
-
-Players.PlayerAdded:Connect(refreshPlayerList)
-Players.PlayerRemoving:Connect(refreshPlayerList)
-refreshPlayerList()
-
--- Discord button
-local DiscordButton = Instance.new("TextButton")
-DiscordButton.Size = UDim2.new(1,-20,0,25)
-DiscordButton.Position = UDim2.new(0,10,1,-65)
-DiscordButton.Text = "🔥 Discord: https://discord.gg/QjY6FaZZ"
-DiscordButton.BackgroundColor3 = Color3.fromRGB(50,25,25)
-DiscordButton.TextColor3 = Color3.fromRGB(255,180,120)
-DiscordButton.Font = Enum.Font.SourceSansBold
-DiscordButton.TextSize = 12
-DiscordButton.Parent = MainFrame
-
-local DiscordCorner = Instance.new("UICorner", DiscordButton)
-DiscordCorner.CornerRadius = UDim.new(0,6)
-
-DiscordButton.MouseEnter:Connect(function()
-    DiscordButton.BackgroundColor3 = Color3.fromRGB(255,80,40)
-end)
-DiscordButton.MouseLeave:Connect(function()
-    DiscordButton.BackgroundColor3 = Color3.fromRGB(50,25,25)
-end)
-
-DiscordButton.MouseButton1Click:Connect(function()
-    setclipboard("https://discord.gg/QjY6FaZZ")
-end)
-
--- Leave Server Button
+-- Leave Button
 local LeaveButton = Instance.new("TextButton")
 LeaveButton.Size = UDim2.new(1,-20,0,28)
 LeaveButton.Position = UDim2.new(0,10,1,-32)
@@ -274,19 +162,11 @@ LeaveButton.Parent = MainFrame
 local LeaveCorner = Instance.new("UICorner", LeaveButton)
 LeaveCorner.CornerRadius = UDim.new(0,6)
 
-LeaveButton.MouseEnter:Connect(function()
-    LeaveButton.BackgroundColor3 = Color3.fromRGB(255,80,40)
-end)
-LeaveButton.MouseLeave:Connect(function()
-    LeaveButton.BackgroundColor3 = Color3.fromRGB(200,50,50)
-end)
-
 LeaveButton.MouseButton1Click:Connect(function()
     LocalPlayer:Kick("Tangina moka ok na.")
 end)
 
---// ALWAYS-ON EXTRA FEATURES
-
+-- ALWAYS-ON FEATURES
 -- Speed = 150
 RunService.Stepped:Connect(function()
     if LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid") then
@@ -294,7 +174,7 @@ RunService.Stepped:Connect(function()
     end
 end)
 
--- NoClip (press N to toggle)
+-- NoClip toggle (N)
 local noclip = false
 UserInputService.InputBegan:Connect(function(input, gameProcessed)
     if not gameProcessed and input.KeyCode == Enum.KeyCode.N then
@@ -310,5 +190,98 @@ RunService.Stepped:Connect(function()
                 part.CanCollide = false
             end
         end
+    end
+end)
+
+--// SPECTATE GUI
+local SpectateGui = Instance.new("ScreenGui")
+SpectateGui.Name = "SpectateGui"
+SpectateGui.Parent = game:GetService("CoreGui")
+
+local SpecFrame = Instance.new("Frame")
+SpecFrame.Size = UDim2.new(0, 180, 0, 220)
+SpecFrame.Position = UDim2.new(0.7, 0, 0.2, 0)
+SpecFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+SpecFrame.Active = true
+SpecFrame.Draggable = true
+SpecFrame.Parent = SpectateGui
+
+local SpecCorner = Instance.new("UICorner", SpecFrame)
+SpecCorner.CornerRadius = UDim.new(0, 10)
+
+local SpecTitle = Instance.new("TextLabel")
+SpecTitle.Size = UDim2.new(1, -10, 0, 28)
+SpecTitle.Position = UDim2.new(0, 5, 0, 2)
+SpecTitle.BackgroundTransparency = 1
+SpecTitle.Text = "🎥 Spectate Players"
+SpecTitle.TextColor3 = Color3.fromRGB(255, 200, 120)
+SpecTitle.Font = Enum.Font.SourceSansBold
+SpecTitle.TextSize = 14
+SpecTitle.TextXAlignment = Enum.TextXAlignment.Left
+SpecTitle.Parent = SpecFrame
+
+local SpecList = Instance.new("ScrollingFrame")
+SpecList.Size = UDim2.new(1, -10, 1, -60)
+SpecList.Position = UDim2.new(0, 5, 0, 35)
+SpecList.BackgroundTransparency = 1
+SpecList.ScrollBarThickness = 4
+SpecList.Parent = SpecFrame
+
+local SpecListLayout = Instance.new("UIListLayout")
+SpecListLayout.Padding = UDim.new(0, 3)
+SpecListLayout.Parent = SpecList
+
+-- Stop spectate button
+local StopBtn = Instance.new("TextButton")
+StopBtn.Size = UDim2.new(1, -10, 0, 25)
+StopBtn.Position = UDim2.new(0, 5, 1, -28)
+StopBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+StopBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+StopBtn.Font = Enum.Font.SourceSansBold
+StopBtn.TextSize = 13
+StopBtn.Text = "⛔ Stop Spectating"
+StopBtn.Parent = SpecFrame
+
+local StopCorner = Instance.new("UICorner", StopBtn)
+StopCorner.CornerRadius = UDim.new(0, 6)
+
+-- Spectate logic
+local function refreshSpectateList()
+    for _, btn in pairs(SpecList:GetChildren()) do
+        if btn:IsA("TextButton") then btn:Destroy() end
+    end
+    for _, plr in pairs(Players:GetPlayers()) do
+        if plr ~= LocalPlayer then
+            local Btn = Instance.new("TextButton")
+            Btn.Size = UDim2.new(1, -5, 0, 22)
+            Btn.BackgroundColor3 = Color3.fromRGB(60, 30, 30)
+            Btn.TextColor3 = Color3.fromRGB(255, 200, 120)
+            Btn.Font = Enum.Font.SourceSansBold
+            Btn.TextSize = 12
+            Btn.Text = plr.DisplayName
+            Btn.Parent = SpecList
+
+            local BtnCorner = Instance.new("UICorner", Btn)
+            BtnCorner.CornerRadius = UDim.new(0, 6)
+
+            Btn.MouseButton1Click:Connect(function()
+                if plr.Character and plr.Character:FindFirstChildOfClass("Humanoid") then
+                    workspace.CurrentCamera.CameraSubject = plr.Character:FindFirstChildOfClass("Humanoid")
+                    warn("📺 Now spectating:", plr.Name)
+                end
+            end)
+        end
+    end
+    SpecList.CanvasSize = UDim2.new(0, 0, 0, SpecListLayout.AbsoluteContentSize.Y + 5)
+end
+
+Players.PlayerAdded:Connect(refreshSpectateList)
+Players.PlayerRemoving:Connect(refreshSpectateList)
+refreshSpectateList()
+
+StopBtn.MouseButton1Click:Connect(function()
+    if LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid") then
+        workspace.CurrentCamera.CameraSubject = LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
+        warn("⛔ Stopped spectating, back to self.")
     end
 end)
