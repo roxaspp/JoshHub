@@ -1,4 +1,4 @@
---// Control Panel UI with Teleporter + Auto Accept
+--// Control Panel UI with Teleporter + Auto Accept + Leave Button
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -21,8 +21,8 @@ screenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
 
 -- Frame (box UI)
 local mainFrame = Instance.new("Frame")
-mainFrame.Size = UDim2.new(0, 300, 0, 250)
-mainFrame.Position = UDim2.new(0.5, -150, 0.5, -125)
+mainFrame.Size = UDim2.new(0, 300, 0, 300)
+mainFrame.Position = UDim2.new(0.5, -150, 0.5, -150)
 mainFrame.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
 mainFrame.BorderSizePixel = 0
 mainFrame.Visible = true
@@ -38,96 +38,10 @@ logoBtn.Font = Enum.Font.SourceSansBold
 logoBtn.TextSize = 20
 logoBtn.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
 logoBtn.BorderSizePixel = 0
+logoBtn.TextScaled = true
 logoBtn.Parent = mainFrame
-logoBtn.TextScaled = true
-logoBtn.AutoButtonColor = true
-logoBtn.ClipsDescendants = true
-logoBtn.AnchorPoint = Vector2.new(0,0)
-logoBtn.ZIndex = 2
-logoBtn.TextXAlignment = Enum.TextXAlignment.Center
-logoBtn.TextYAlignment = Enum.TextYAlignment.Center
-logoBtn.BackgroundTransparency = 0
 logoBtn.TextWrapped = true
-logoBtn.TextStrokeTransparency = 0.5
-logoBtn.TextStrokeColor3 = Color3.fromRGB(0,0,0)
-logoBtn.TextTransparency = 0
-logoBtn.TextScaled = true
-logoBtn.BorderSizePixel = 0
-logoBtn.AutoButtonColor = true
-logoBtn.TextWrapped = true
-logoBtn.TextStrokeTransparency = 0.5
 logoBtn.ClipsDescendants = true
-logoBtn.AutoButtonColor = true
-logoBtn.ZIndex = 2
-logoBtn.TextXAlignment = Enum.TextXAlignment.Center
-logoBtn.TextYAlignment = Enum.TextYAlignment.Center
-logoBtn.TextStrokeColor3 = Color3.fromRGB(0,0,0)
-logoBtn.TextStrokeTransparency = 0.5
-logoBtn.TextTransparency = 0
-logoBtn.TextStrokeTransparency = 0.5
-logoBtn.TextStrokeColor3 = Color3.fromRGB(0,0,0)
-logoBtn.TextStrokeTransparency = 0.5
-logoBtn.TextStrokeColor3 = Color3.fromRGB(0,0,0)
-logoBtn.TextStrokeTransparency = 0.5
-logoBtn.TextStrokeColor3 = Color3.fromRGB(0,0,0)
-logoBtn.TextStrokeTransparency = 0.5
-logoBtn.TextStrokeColor3 = Color3.fromRGB(0,0,0)
-logoBtn.TextStrokeTransparency = 0.5
-logoBtn.TextStrokeColor3 = Color3.fromRGB(0,0,0)
-
-logoBtn.TextStrokeTransparency = 0.5
-logoBtn.TextStrokeColor3 = Color3.fromRGB(0,0,0)
-
-logoBtn.TextStrokeTransparency = 0.5
-logoBtn.TextStrokeColor3 = Color3.fromRGB(0,0,0)
-
-logoBtn.TextStrokeTransparency = 0.5
-logoBtn.TextStrokeColor3 = Color3.fromRGB(0,0,0)
-
-logoBtn.TextStrokeTransparency = 0.5
-logoBtn.TextStrokeColor3 = Color3.fromRGB(0,0,0)
-
-logoBtn.TextStrokeTransparency = 0.5
-logoBtn.TextStrokeColor3 = Color3.fromRGB(0,0,0)
-
-logoBtn.TextStrokeTransparency = 0.5
-logoBtn.TextStrokeColor3 = Color3.fromRGB(0,0,0)
-
-logoBtn.TextStrokeTransparency = 0.5
-logoBtn.TextStrokeColor3 = Color3.fromRGB(0,0,0)
-
-logoBtn.TextStrokeTransparency = 0.5
-logoBtn.TextStrokeColor3 = Color3.fromRGB(0,0,0)
-
-logoBtn.TextStrokeTransparency = 0.5
-logoBtn.TextStrokeColor3 = Color3.fromRGB(0,0,0)
-
-logoBtn.TextStrokeTransparency = 0.5
-logoBtn.TextStrokeColor3 = Color3.fromRGB(0,0,0)
-
-logoBtn.TextStrokeTransparency = 0.5
-logoBtn.TextStrokeColor3 = Color3.fromRGB(0,0,0)
-
-logoBtn.TextStrokeTransparency = 0.5
-logoBtn.TextStrokeColor3 = Color3.fromRGB(0,0,0)
-
-logoBtn.TextStrokeTransparency = 0.5
-logoBtn.TextStrokeColor3 = Color3.fromRGB(0,0,0)
-
-logoBtn.TextStrokeTransparency = 0.5
-logoBtn.TextStrokeColor3 = Color3.fromRGB(0,0,0)
-
-logoBtn.TextStrokeTransparency = 0.5
-logoBtn.TextStrokeColor3 = Color3.fromRGB(0,0,0)
-
-logoBtn.TextStrokeTransparency = 0.5
-logoBtn.TextStrokeColor3 = Color3.fromRGB(0,0,0)
-
-logoBtn.TextStrokeTransparency = 0.5
-logoBtn.TextStrokeColor3 = Color3.fromRGB(0,0,0)
-
-logoBtn.TextStrokeTransparency = 0.5
-logoBtn.TextStrokeColor3 = Color3.fromRGB(0,0,0)
 
 -- ✅ Teleporter List (ScrollingFrame)
 local scroll = Instance.new("ScrollingFrame")
@@ -183,6 +97,21 @@ Players.PlayerRemoving:Connect(function(plr)
             child:Destroy()
         end
     end
+end)
+
+-- ✅ Leave Button
+local leaveBtn = Instance.new("TextButton")
+leaveBtn.Size = UDim2.new(0, 120, 0, 40)
+leaveBtn.Position = UDim2.new(0.5, -60, 1, -50)
+leaveBtn.Text = "Leave Game"
+leaveBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+leaveBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+leaveBtn.Font = Enum.Font.SourceSansBold
+leaveBtn.TextSize = 18
+leaveBtn.Parent = mainFrame
+
+leaveBtn.MouseButton1Click:Connect(function()
+    LocalPlayer:Kick("You left the game.")
 end)
 
 -- ✅ Minimize Function sa Logo Button
