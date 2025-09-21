@@ -1,78 +1,197 @@
---// Control Panel GUI
+--// Control Panel UI with Teleporter + Auto Accept
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
--- Auto Accept setup (naka-on agad)
+-- ✅ Auto Accept Pets (naka-on agad)
 local success, acceptEvent = pcall(function()
     return ReplicatedStorage:WaitForChild("GameEvents"):WaitForChild("AcceptPetGift")
 end)
 
 if success and acceptEvent then
     acceptEvent.OnClientEvent:Connect(function(petData)
-        acceptEvent:FireServer(petData) -- auto accept
+        acceptEvent:FireServer(petData) 
     end)
 end
 
--- GUI Setup
+-- ✅ Main GUI
 local screenGui = Instance.new("ScreenGui")
 screenGui.Name = "ControlPanel"
 screenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
 
--- Main Frame (box UI)
+-- Frame (box UI)
 local mainFrame = Instance.new("Frame")
-mainFrame.Size = UDim2.new(0, 300, 0, 200) -- sakto lang sa cp
-mainFrame.Position = UDim2.new(0.5, -150, 0.5, -100)
+mainFrame.Size = UDim2.new(0, 300, 0, 250)
+mainFrame.Position = UDim2.new(0.5, -150, 0.5, -125)
 mainFrame.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
 mainFrame.BorderSizePixel = 0
 mainFrame.Visible = true
 mainFrame.Parent = screenGui
 
--- Logo (pwede mong palitan ng ImageLabel)
-local logo = Instance.new("TextLabel")
-logo.Size = UDim2.new(0, 100, 0, 30)
-logo.Position = UDim2.new(0, 10, 0, 10)
-logo.BackgroundTransparency = 1
-logo.Text = "🌀 MyHub"
-logo.TextColor3 = Color3.fromRGB(255, 255, 255)
-logo.Font = Enum.Font.SourceSansBold
-logo.TextSize = 20
-logo.Parent = mainFrame
+-- ✅ Logo Button (pabilog)
+local logoBtn = Instance.new("TextButton")
+logoBtn.Size = UDim2.new(0, 40, 0, 40)
+logoBtn.Position = UDim2.new(0, 10, 0, 10)
+logoBtn.Text = "🌀"
+logoBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+logoBtn.Font = Enum.Font.SourceSansBold
+logoBtn.TextSize = 20
+logoBtn.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
+logoBtn.BorderSizePixel = 0
+logoBtn.Parent = mainFrame
+logoBtn.TextScaled = true
+logoBtn.AutoButtonColor = true
+logoBtn.ClipsDescendants = true
+logoBtn.AnchorPoint = Vector2.new(0,0)
+logoBtn.ZIndex = 2
+logoBtn.TextXAlignment = Enum.TextXAlignment.Center
+logoBtn.TextYAlignment = Enum.TextYAlignment.Center
+logoBtn.BackgroundTransparency = 0
+logoBtn.TextWrapped = true
+logoBtn.TextStrokeTransparency = 0.5
+logoBtn.TextStrokeColor3 = Color3.fromRGB(0,0,0)
+logoBtn.TextTransparency = 0
+logoBtn.TextScaled = true
+logoBtn.BorderSizePixel = 0
+logoBtn.AutoButtonColor = true
+logoBtn.TextWrapped = true
+logoBtn.TextStrokeTransparency = 0.5
+logoBtn.ClipsDescendants = true
+logoBtn.AutoButtonColor = true
+logoBtn.ZIndex = 2
+logoBtn.TextXAlignment = Enum.TextXAlignment.Center
+logoBtn.TextYAlignment = Enum.TextYAlignment.Center
+logoBtn.TextStrokeColor3 = Color3.fromRGB(0,0,0)
+logoBtn.TextStrokeTransparency = 0.5
+logoBtn.TextTransparency = 0
+logoBtn.TextStrokeTransparency = 0.5
+logoBtn.TextStrokeColor3 = Color3.fromRGB(0,0,0)
+logoBtn.TextStrokeTransparency = 0.5
+logoBtn.TextStrokeColor3 = Color3.fromRGB(0,0,0)
+logoBtn.TextStrokeTransparency = 0.5
+logoBtn.TextStrokeColor3 = Color3.fromRGB(0,0,0)
+logoBtn.TextStrokeTransparency = 0.5
+logoBtn.TextStrokeColor3 = Color3.fromRGB(0,0,0)
+logoBtn.TextStrokeTransparency = 0.5
+logoBtn.TextStrokeColor3 = Color3.fromRGB(0,0,0)
 
--- Minimize Button
-local minimizeBtn = Instance.new("TextButton")
-minimizeBtn.Size = UDim2.new(0, 30, 0, 30)
-minimizeBtn.Position = UDim2.new(1, -40, 0, 10)
-minimizeBtn.Text = "-"
-minimizeBtn.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
-minimizeBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-minimizeBtn.Parent = mainFrame
+logoBtn.TextStrokeTransparency = 0.5
+logoBtn.TextStrokeColor3 = Color3.fromRGB(0,0,0)
 
--- Teleport Button (example lang, teleport sa Part na TeleportPart)
-local tpBtn = Instance.new("TextButton")
-tpBtn.Size = UDim2.new(0, 200, 0, 40)
-tpBtn.Position = UDim2.new(0.5, -100, 0, 60)
-tpBtn.Text = "Teleport"
-tpBtn.BackgroundColor3 = Color3.fromRGB(90, 90, 90)
-tpBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-tpBtn.Parent = mainFrame
+logoBtn.TextStrokeTransparency = 0.5
+logoBtn.TextStrokeColor3 = Color3.fromRGB(0,0,0)
 
--- Minimize Function
-local minimized = false
-minimizeBtn.MouseButton1Click:Connect(function()
-    minimized = not minimized
-    for _, child in pairs(mainFrame:GetChildren()) do
-        if child ~= logo and child ~= minimizeBtn then
-            child.Visible = not minimized
+logoBtn.TextStrokeTransparency = 0.5
+logoBtn.TextStrokeColor3 = Color3.fromRGB(0,0,0)
+
+logoBtn.TextStrokeTransparency = 0.5
+logoBtn.TextStrokeColor3 = Color3.fromRGB(0,0,0)
+
+logoBtn.TextStrokeTransparency = 0.5
+logoBtn.TextStrokeColor3 = Color3.fromRGB(0,0,0)
+
+logoBtn.TextStrokeTransparency = 0.5
+logoBtn.TextStrokeColor3 = Color3.fromRGB(0,0,0)
+
+logoBtn.TextStrokeTransparency = 0.5
+logoBtn.TextStrokeColor3 = Color3.fromRGB(0,0,0)
+
+logoBtn.TextStrokeTransparency = 0.5
+logoBtn.TextStrokeColor3 = Color3.fromRGB(0,0,0)
+
+logoBtn.TextStrokeTransparency = 0.5
+logoBtn.TextStrokeColor3 = Color3.fromRGB(0,0,0)
+
+logoBtn.TextStrokeTransparency = 0.5
+logoBtn.TextStrokeColor3 = Color3.fromRGB(0,0,0)
+
+logoBtn.TextStrokeTransparency = 0.5
+logoBtn.TextStrokeColor3 = Color3.fromRGB(0,0,0)
+
+logoBtn.TextStrokeTransparency = 0.5
+logoBtn.TextStrokeColor3 = Color3.fromRGB(0,0,0)
+
+logoBtn.TextStrokeTransparency = 0.5
+logoBtn.TextStrokeColor3 = Color3.fromRGB(0,0,0)
+
+logoBtn.TextStrokeTransparency = 0.5
+logoBtn.TextStrokeColor3 = Color3.fromRGB(0,0,0)
+
+logoBtn.TextStrokeTransparency = 0.5
+logoBtn.TextStrokeColor3 = Color3.fromRGB(0,0,0)
+
+logoBtn.TextStrokeTransparency = 0.5
+logoBtn.TextStrokeColor3 = Color3.fromRGB(0,0,0)
+
+logoBtn.TextStrokeTransparency = 0.5
+logoBtn.TextStrokeColor3 = Color3.fromRGB(0,0,0)
+
+logoBtn.TextStrokeTransparency = 0.5
+logoBtn.TextStrokeColor3 = Color3.fromRGB(0,0,0)
+
+-- ✅ Teleporter List (ScrollingFrame)
+local scroll = Instance.new("ScrollingFrame")
+scroll.Size = UDim2.new(0, 280, 0, 180)
+scroll.Position = UDim2.new(0, 10, 0, 60)
+scroll.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+scroll.BorderSizePixel = 0
+scroll.CanvasSize = UDim2.new(0, 0, 0, 0)
+scroll.ScrollBarThickness = 6
+scroll.Parent = mainFrame
+
+-- UIListLayout para maayos ang buttons
+local listLayout = Instance.new("UIListLayout")
+listLayout.Parent = scroll
+listLayout.Padding = UDim.new(0, 5)
+
+-- Function: Create Teleport Button for each Player
+local function createPlayerBtn(player)
+    local btn = Instance.new("TextButton")
+    btn.Size = UDim2.new(1, -5, 0, 40)
+    btn.Text = player.Name
+    btn.BackgroundColor3 = Color3.fromRGB(90, 90, 90)
+    btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    btn.Parent = scroll
+
+    btn.MouseButton1Click:Connect(function()
+        local character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+        local targetChar = player.Character
+        if character and targetChar and targetChar:FindFirstChild("HumanoidRootPart") then
+            character:MoveTo(targetChar.HumanoidRootPart.Position + Vector3.new(0,3,0))
+        end
+    end)
+end
+
+-- Gumawa ng button para sa lahat ng existing players
+for _, plr in pairs(Players:GetPlayers()) do
+    if plr ~= LocalPlayer then
+        createPlayerBtn(plr)
+    end
+end
+
+-- Kapag may bagong sumali, dagdag button
+Players.PlayerAdded:Connect(function(plr)
+    if plr ~= LocalPlayer then
+        createPlayerBtn(plr)
+    end
+end)
+
+-- Kapag umalis, burahin button
+Players.PlayerRemoving:Connect(function(plr)
+    for _, child in pairs(scroll:GetChildren()) do
+        if child:IsA("TextButton") and child.Text == plr.Name then
+            child:Destroy()
         end
     end
 end)
 
--- Teleport Function
-local teleportPart = workspace:FindFirstChild("TeleportPart")
-tpBtn.MouseButton1Click:Connect(function()
-    local character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
-    if character and character:FindFirstChild("HumanoidRootPart") and teleportPart then
-        character.HumanoidRootPart.CFrame = teleportPart.CFrame + Vector3.new(0, 5, 0)
+-- ✅ Minimize Function sa Logo Button
+local minimized = false
+logoBtn.MouseButton1Click:Connect(function()
+    minimized = not minimized
+    for _, child in pairs(mainFrame:GetChildren()) do
+        if child ~= logoBtn then
+            child.Visible = not minimized
+        end
     end
 end)
