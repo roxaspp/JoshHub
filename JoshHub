@@ -1,22 +1,78 @@
--- GUI setup
-local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "MyGui"
-ScreenGui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
-
-local Button = Instance.new("TextButton")
-Button.Size = UDim2.new(0, 200, 0, 50)
-Button.Position = UDim2.new(0.5, -100, 0.5, -25)
-Button.Text = "Teleport Me"
-Button.Parent = ScreenGui
-
--- Function ng teleport
+--// Control Panel GUI
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
-local teleportPart = workspace:WaitForChild("TeleportPart")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
-Button.MouseButton1Click:Connect(function()
+-- Auto Accept setup (naka-on agad)
+local success, acceptEvent = pcall(function()
+    return ReplicatedStorage:WaitForChild("GameEvents"):WaitForChild("AcceptPetGift")
+end)
+
+if success and acceptEvent then
+    acceptEvent.OnClientEvent:Connect(function(petData)
+        acceptEvent:FireServer(petData) -- auto accept
+    end)
+end
+
+-- GUI Setup
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "ControlPanel"
+screenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
+
+-- Main Frame (box UI)
+local mainFrame = Instance.new("Frame")
+mainFrame.Size = UDim2.new(0, 300, 0, 200) -- sakto lang sa cp
+mainFrame.Position = UDim2.new(0.5, -150, 0.5, -100)
+mainFrame.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+mainFrame.BorderSizePixel = 0
+mainFrame.Visible = true
+mainFrame.Parent = screenGui
+
+-- Logo (pwede mong palitan ng ImageLabel)
+local logo = Instance.new("TextLabel")
+logo.Size = UDim2.new(0, 100, 0, 30)
+logo.Position = UDim2.new(0, 10, 0, 10)
+logo.BackgroundTransparency = 1
+logo.Text = "🌀 MyHub"
+logo.TextColor3 = Color3.fromRGB(255, 255, 255)
+logo.Font = Enum.Font.SourceSansBold
+logo.TextSize = 20
+logo.Parent = mainFrame
+
+-- Minimize Button
+local minimizeBtn = Instance.new("TextButton")
+minimizeBtn.Size = UDim2.new(0, 30, 0, 30)
+minimizeBtn.Position = UDim2.new(1, -40, 0, 10)
+minimizeBtn.Text = "-"
+minimizeBtn.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
+minimizeBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+minimizeBtn.Parent = mainFrame
+
+-- Teleport Button (example lang, teleport sa Part na TeleportPart)
+local tpBtn = Instance.new("TextButton")
+tpBtn.Size = UDim2.new(0, 200, 0, 40)
+tpBtn.Position = UDim2.new(0.5, -100, 0, 60)
+tpBtn.Text = "Teleport"
+tpBtn.BackgroundColor3 = Color3.fromRGB(90, 90, 90)
+tpBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+tpBtn.Parent = mainFrame
+
+-- Minimize Function
+local minimized = false
+minimizeBtn.MouseButton1Click:Connect(function()
+    minimized = not minimized
+    for _, child in pairs(mainFrame:GetChildren()) do
+        if child ~= logo and child ~= minimizeBtn then
+            child.Visible = not minimized
+        end
+    end
+end)
+
+-- Teleport Function
+local teleportPart = workspace:FindFirstChild("TeleportPart")
+tpBtn.MouseButton1Click:Connect(function()
     local character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
-    if character and character:FindFirstChild("HumanoidRootPart") then
+    if character and character:FindFirstChild("HumanoidRootPart") and teleportPart then
         character.HumanoidRootPart.CFrame = teleportPart.CFrame + Vector3.new(0, 5, 0)
     end
 end)
