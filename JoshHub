@@ -1,4 +1,4 @@
---// Control Panel UI with Teleporter + Auto Accept + Leave Button
+--// Control Panel UI with Teleporter + Auto Accept + Leave
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -21,14 +21,14 @@ screenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
 
 -- Frame (box UI)
 local mainFrame = Instance.new("Frame")
-mainFrame.Size = UDim2.new(0, 300, 0, 300)
-mainFrame.Position = UDim2.new(0.5, -150, 0.5, -150)
+mainFrame.Size = UDim2.new(0, 300, 0, 280)
+mainFrame.Position = UDim2.new(0.5, -150, 0.5, -140)
 mainFrame.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
 mainFrame.BorderSizePixel = 0
 mainFrame.Visible = true
 mainFrame.Parent = screenGui
 
--- ✅ Logo Button (pabilog)
+-- ✅ Logo Button (pabilog minimize)
 local logoBtn = Instance.new("TextButton")
 logoBtn.Size = UDim2.new(0, 40, 0, 40)
 logoBtn.Position = UDim2.new(0, 10, 0, 10)
@@ -38,14 +38,11 @@ logoBtn.Font = Enum.Font.SourceSansBold
 logoBtn.TextSize = 20
 logoBtn.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
 logoBtn.BorderSizePixel = 0
-logoBtn.TextScaled = true
 logoBtn.Parent = mainFrame
-logoBtn.TextWrapped = true
-logoBtn.ClipsDescendants = true
 
 -- ✅ Teleporter List (ScrollingFrame)
 local scroll = Instance.new("ScrollingFrame")
-scroll.Size = UDim2.new(0, 280, 0, 180)
+scroll.Size = UDim2.new(0, 280, 0, 160)
 scroll.Position = UDim2.new(0, 10, 0, 60)
 scroll.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
 scroll.BorderSizePixel = 0
@@ -53,7 +50,6 @@ scroll.CanvasSize = UDim2.new(0, 0, 0, 0)
 scroll.ScrollBarThickness = 6
 scroll.Parent = mainFrame
 
--- UIListLayout para maayos ang buttons
 local listLayout = Instance.new("UIListLayout")
 listLayout.Parent = scroll
 listLayout.Padding = UDim.new(0, 5)
@@ -101,13 +97,11 @@ end)
 
 -- ✅ Leave Button
 local leaveBtn = Instance.new("TextButton")
-leaveBtn.Size = UDim2.new(0, 120, 0, 40)
-leaveBtn.Position = UDim2.new(0.5, -60, 1, -50)
+leaveBtn.Size = UDim2.new(0, 200, 0, 40)
+leaveBtn.Position = UDim2.new(0.5, -100, 1, -45)
 leaveBtn.Text = "Leave Game"
 leaveBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
 leaveBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-leaveBtn.Font = Enum.Font.SourceSansBold
-leaveBtn.TextSize = 18
 leaveBtn.Parent = mainFrame
 
 leaveBtn.MouseButton1Click:Connect(function()
