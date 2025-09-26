@@ -1,7 +1,7 @@
--- Dual-Key Panel (Fixed UI + HttpService check)
+-- Dual-Key Panel (Client-Safe + Draggable UI)
 local Players = game:GetService("Players")
-local HttpService = game:GetService("HttpService")
 local player = Players.LocalPlayer
+local PlayerGui = player:WaitForChild("PlayerGui")
 
 -- CONFIG
 local KEY_NORMAL = "NORMAL-KEY-1234"
@@ -10,107 +10,75 @@ local SCRIPT_URL_NORMAL = "https://raw.githubusercontent.com/roxaspp/JoshHub/ref
 local SCRIPT_URL_PREMIUM = "https://raw.githubusercontent.com/roxaspp/JoshHub/refs/heads/main/joshhubpremium"
 local DISCORD_INVITE = "https://discord.gg/n2P7pxvq"
 
--- CREATE SCREEN GUI
+-- CREATE GUI
 local screenGui = Instance.new("ScreenGui")
 screenGui.Name = "JoshHubKeyUI"
-screenGui.ResetOnSpawn = false
-screenGui.Parent = player:WaitForChild("PlayerGui")
+screenGui.Parent = PlayerGui
 
--- MAIN FRAME (Bigger & centered)
 local frame = Instance.new("Frame")
-frame.Size = UDim2.new(0, 400, 0, 250)
-frame.Position = UDim2.new(0.5, 0, 0.5, 0)
-frame.AnchorPoint = Vector2.new(0.5, 0.5)
-frame.BackgroundColor3 = Color3.fromRGB(35, 35, 45)
-frame.BorderSizePixel = 0
+frame.Size = UDim2.new(0, 420, 0, 280)
+frame.Position = UDim2.new(0.5,0,0.5,0)
+frame.AnchorPoint = Vector2.new(0.5,0.5)
+frame.BackgroundColor3 = Color3.fromRGB(40,40,50)
 frame.Parent = screenGui
-local uiCorner = Instance.new("UICorner", frame)
-uiCorner.CornerRadius = UDim.new(0, 12)
+
+-- Draggable
+frame.Active = true
+frame.Draggable = true
+
+local uic = Instance.new("UICorner", frame)
+uic.CornerRadius = UDim.new(0,12)
 
 -- TITLE
-local title = Instance.new("TextLabel")
+local title = Instance.new("TextLabel", frame)
 title.Text = "🔐 JoshHub Dual Key Panel"
 title.Size = UDim2.new(1, -20, 0, 40)
-title.Position = UDim2.new(0, 10, 0, 10)
+title.Position = UDim2.new(0,10,0,10)
 title.BackgroundTransparency = 1
 title.TextColor3 = Color3.fromRGB(255,220,150)
 title.Font = Enum.Font.GothamBold
 title.TextSize = 22
 title.TextXAlignment = Enum.TextXAlignment.Left
-title.Parent = frame
 
 -- KEYBOX
-local keyBox = Instance.new("TextBox")
+local keyBox = Instance.new("TextBox", frame)
 keyBox.PlaceholderText = "Ilagay ang key dito"
 keyBox.Size = UDim2.new(1, -20, 0, 40)
-keyBox.Position = UDim2.new(0, 10, 0, 60)
+keyBox.Position = UDim2.new(0,10,0,60)
 keyBox.BackgroundColor3 = Color3.fromRGB(60,60,70)
 keyBox.TextColor3 = Color3.fromRGB(240,240,240)
-keyBox.Font = Enum.Font.SourceSans
+keyBox.Font = Enum.Font.Gotham
 keyBox.TextSize = 18
 keyBox.ClearTextOnFocus = false
-keyBox.Parent = frame
 local keyCorner = Instance.new("UICorner", keyBox)
 keyCorner.CornerRadius = UDim.new(0,8)
 
--- FEEDBACK LABEL
-local feedback = Instance.new("TextLabel")
-feedback.Text = ""
+-- FEEDBACK
+local feedback = Instance.new("TextLabel", frame)
 feedback.Size = UDim2.new(1, -20, 0, 28)
-feedback.Position = UDim2.new(0, 10, 1, -40)
+feedback.Position = UDim2.new(0,10,1,-40)
 feedback.BackgroundTransparency = 1
 feedback.TextColor3 = Color3.fromRGB(200,200,200)
 feedback.Font = Enum.Font.Gotham
 feedback.TextSize = 16
 feedback.TextXAlignment = Enum.TextXAlignment.Left
-feedback.Parent = frame
+feedback.Text = "Ready. Ilagay ang key."
 
 local function setFeedback(txt, timeout)
     feedback.Text = txt
     if timeout then
-        delay(timeout, function()
+        delay(timeout,function()
             if feedback then feedback.Text = "" end
         end)
     end
 end
 
--- CHECK HttpService
-if not HttpService.HttpEnabled then
-    setFeedback("⚠️ HttpService naka-off! Enable muna sa settings.", 0)
-end
-
--- HELPER: fetch & run
-local function fetchAndExecute(url)
-    if not HttpService.HttpEnabled then
-        setFeedback("HttpService naka-off. Hindi puwede mag-download.", 5)
-        return
-    end
-    spawn(function()
-        local ok,result = pcall(function() return game:HttpGet(url) end)
-        if not ok then
-            setFeedback("Download failed: "..tostring(result),6)
-            return
-        end
-        local ok2,fn = pcall(function() return loadstring(result) end)
-        if not ok2 or typeof(fn) ~= "function" then
-            setFeedback("Loadstring error.",6)
-            return
-        end
-        local ok3,res3 = pcall(fn)
-        if not ok3 then
-            setFeedback("Error habang pinapatakbo script: "..tostring(res3),6)
-            return
-        end
-        setFeedback("Script na-run nang successful!",4)
-    end)
-end
-
--- BUTTON CREATION
-local function makeButton(text, y)
+-- BUTTON HELPER
+local function makeButton(text,y)
     local btn = Instance.new("TextButton")
     btn.Text = text
-    btn.Size = UDim2.new(1, -20, 0, 45)
-    btn.Position = UDim2.new(0, 10, 0, y)
+    btn.Size = UDim2.new(1,-20,0,45)
+    btn.Position = UDim2.new(0,10,0,y)
     btn.BackgroundColor3 = Color3.fromRGB(80,80,100)
     btn.TextColor3 = Color3.fromRGB(255,255,255)
     btn.Font = Enum.Font.GothamBold
@@ -124,11 +92,10 @@ end
 local normalBtn = makeButton("Use Normal Key", 120)
 local premiumBtn = makeButton("Use Premium Key", 180)
 
--- GET KEY BUTTON (Discord)
 local getKeyBtn = Instance.new("TextButton")
 getKeyBtn.Text = "📋 Get Key / Discord"
-getKeyBtn.Size = UDim2.new(0, 180, 0, 32)
-getKeyBtn.Position = UDim2.new(1, -190, 0, 10)
+getKeyBtn.Size = UDim2.new(0,180,0,32)
+getKeyBtn.Position = UDim2.new(1,-190,0,10)
 getKeyBtn.AnchorPoint = Vector2.new(1,0)
 getKeyBtn.BackgroundColor3 = Color3.fromRGB(50,50,80)
 getKeyBtn.TextColor3 = Color3.fromRGB(255,255,255)
@@ -138,11 +105,35 @@ getKeyBtn.Parent = frame
 local gkCorner = Instance.new("UICorner", getKeyBtn)
 gkCorner.CornerRadius = UDim.new(0,10)
 
--- BUTTON ACTIONS
+-- HELPER: run script (uses pcall so no error crash)
+local function runScript(url)
+    spawn(function()
+        local ok, result = pcall(function()
+            return game:HttpGet(url)
+        end)
+        if not ok then
+            setFeedback("Failed to fetch script. Make sure HttpService is enabled!",6)
+            return
+        end
+        local ok2, fn = pcall(function() return loadstring(result) end)
+        if ok2 and typeof(fn) == "function" then
+            local ok3,res = pcall(fn)
+            if ok3 then
+                setFeedback("Script ran successfully!",4)
+            else
+                setFeedback("Error running script: "..tostring(res),6)
+            end
+        else
+            setFeedback("Loadstring error.",6)
+        end
+    end)
+end
+
+-- BUTTON LOGIC
 normalBtn.MouseButton1Click:Connect(function()
     if keyBox.Text == KEY_NORMAL then
         setFeedback("Normal key accepted. Running script...",3)
-        fetchAndExecute(SCRIPT_URL_NORMAL)
+        runScript(SCRIPT_URL_NORMAL)
     else
         setFeedback("Invalid normal key.",4)
     end
@@ -151,7 +142,7 @@ end)
 premiumBtn.MouseButton1Click:Connect(function()
     if keyBox.Text == KEY_PREMIUM then
         setFeedback("Premium key accepted. Running script...",3)
-        fetchAndExecute(SCRIPT_URL_PREMIUM)
+        runScript(SCRIPT_URL_PREMIUM)
     else
         setFeedback("Invalid premium key.",4)
     end
@@ -172,5 +163,3 @@ getKeyBtn.MouseButton1Click:Connect(function()
         setFeedback("Discord invite inilagay sa box — Ctrl+C para kopyahin.",6)
     end
 end)
-
-setFeedback("Ready. Ilagay ang key at piliin Normal o Premium.",6)
