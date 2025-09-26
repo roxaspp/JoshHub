@@ -1,9 +1,9 @@
---// JoshHub Dual Key Loader + Notifier
+--// JoshHub Dual Key Loader + Notifier (FIXED)
 --// Owner: JoshroxasScript
 
 --// Services
 local Players = game:GetService("Players")
-local LocalPlayer = Players.LocalPlayer
+local TweenService = game:GetService("TweenService")
 
 --// CONFIG
 local NormalKey = "Normal123"            -- 🔑 Normal Key
@@ -14,13 +14,22 @@ local DiscordInvite = "https://discord.gg/YourServer" -- link ng server mo
 local NormalScriptURL = "https://raw.githubusercontent.com/roxaspp/JoshHub/refs/heads/main/JoshHubNormalKeyLoadstring"
 local PremiumScriptURL = "https://raw.githubusercontent.com/roxaspp/JoshHub/refs/heads/main/joshhubpremium"
 
---// Main UI
-local ScreenGui = Instance.new("ScreenGui", game.CoreGui)
+--// UI Holder
+local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = "JoshHubKeyUI"
+if syn and syn.protect_gui then
+    syn.protect_gui(ScreenGui)
+    ScreenGui.Parent = game.CoreGui
+elseif gethui then
+    ScreenGui.Parent = gethui()
+else
+    ScreenGui.Parent = game.CoreGui
+end
 
+--// Frame
 local KeyFrame = Instance.new("Frame", ScreenGui)
-KeyFrame.Size = UDim2.new(0, 300, 0, 150)
-KeyFrame.Position = UDim2.new(0.5, -150, 0.5, -75)
+KeyFrame.Size = UDim2.new(0, 300, 0, 170)
+KeyFrame.Position = UDim2.new(0.5, -150, 0.5, -85)
 KeyFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
 KeyFrame.BorderSizePixel = 0
 KeyFrame.Active = true
@@ -78,7 +87,7 @@ local function Notify(msg, color)
     Box.BorderSizePixel = 0
     Box.BackgroundTransparency = 0.2
     
-    game:GetService("TweenService"):Create(Box, TweenInfo.new(0.5), {BackgroundTransparency = 0}):Play()
+    TweenService:Create(Box, TweenInfo.new(0.5), {BackgroundTransparency = 0}):Play()
     task.delay(2.5, function()
         Box:Destroy()
     end)
