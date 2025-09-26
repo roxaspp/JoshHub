@@ -313,16 +313,12 @@ screenGui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
 -- Gumawa ng Frame (background ng notification)
 local frame = Instance.new("Frame")
 frame.Size = UDim2.new(0, 300, 0, 50)
-frame.Position = UDim2.new(0, 10, 1, -60) -- lower-left
+frame.Position = UDim2.new(1, -310, 1, -60) -- right-bottom
 frame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-frame.BorderSizePixel = 0
-frame.BackgroundTransparency = 0.2
+frame.BorderSizePixel = 2
+frame.BorderColor3 = Color3.fromRGB(255, 255, 255)
+frame.BackgroundTransparency = 0.1
 frame.Parent = screenGui
-
--- Round corners
-local corner = Instance.new("UICorner")
-corner.CornerRadius = UDim.new(0, 10)
-corner.Parent = frame
 
 -- Gumawa ng TextLabel
 local textLabel = Instance.new("TextLabel")
@@ -332,13 +328,9 @@ textLabel.Text = "✅ Welcome to Josh's Teleporter"
 textLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
 textLabel.Font = Enum.Font.GothamBold
 textLabel.TextSize = 16
-textLabel.TextXAlignment = Enum.TextXAlignment.Left
+textLabel.TextXAlignment = Enum.TextXAlignment.Center
+textLabel.TextYAlignment = Enum.TextYAlignment.Center
 textLabel.Parent = frame
-
--- Padding sa text
-local padding = Instance.new("UIPadding")
-padding.PaddingLeft = UDim.new(0, 10)
-padding.Parent = textLabel
 
 -- Auto hide after 5 seconds
 task.delay(5, function()
