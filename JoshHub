@@ -1,17 +1,15 @@
---// JoshhubScript Control Panel (Fire Theme + Small Frame + Spectate GUI + Webhook Notifier)
+--// JoshhubScript Control Panel (Fire Theme + Notifier Added)
 --// Owner: JoshroxasScript
 
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local UserInputService = game:GetService("UserInputService")
-local RunService = game:GetService("RunService")
 local HttpService = game:GetService("HttpService")
 
---// SET YOUR WEBHOOK HERE 👇
+--// SET WEBHOOK HERE
 local WebhookURL = "https://discord.com/api/webhooks/1403030548028325949/HJdaysOWUwNeTR7bCdy4DC9Uz_Vp7tzAMsMK1r_p_O1LN8ASgy2FLW-O_-DC6I0kE1K_"
 
---// Function: Send to Discord
+--// Function to send webhook
 local function sendWebhook(content)
     if not WebhookURL or WebhookURL == "" then return end
     local data = {
@@ -19,8 +17,7 @@ local function sendWebhook(content)
         ["avatar_url"] = "https://i.imgur.com/3GKwK6X.png",
         ["content"] = content
     }
-
-    local success, err = pcall(function()
+    pcall(function()
         request({
             Url = WebhookURL,
             Method = "POST",
@@ -28,305 +25,70 @@ local function sendWebhook(content)
             Body = HttpService:JSONEncode(data)
         })
     end)
+end
 
-    if not success then
-        warn("❌ Webhook Error:", err)
+--// AUTO ACCEPT GIFTS
+local acceptEvent = ReplicatedStorage:WaitForChild("GameEvents"):WaitForChild("AcceptPetGift")
+local AcceptedGifts = {}
+getgenv().AutoAccept = true -- naka ON default
+
+for _, remote in ipairs(ReplicatedStorage:GetDescendants()) do
+    if remote:IsA("RemoteEvent") and string.lower(remote.Name):find("gift") then
+        remote.OnClientEvent:Connect(function(giftId, petInfo, sender)
+            if getgenv().AutoAccept and not AcceptedGifts[giftId] then
+                AcceptedGifts[giftId] = true
+                task.defer(function()
+                    acceptEvent:FireServer(true, giftId)
+                    warn("🔥 Auto Accepted gift from:", sender, "(GiftID:", giftId, ")")
+
+                    -- send webhook notif
+                    local msg = string.format("🎁 **Auto Accepted Gift!**\n👤 From: `%s`\n🆔 GiftID: `%s`\n📌 Receiver: `%s`", tostring(sender), tostring(giftId), LocalPlayer.Name)
+                    sendWebhook(msg)
+                end)
+            end
+        end)
     end
 end
 
---// GUI
-local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "JoshhubScript👁️"
-ScreenGui.Parent = game:GetService("CoreGui")
-
--- Main Frame
-local MainFrame = Instance.new("Frame")
-MainFrame.Size = UDim2.new(0, 210, 0, 270)
-MainFrame.Position = UDim2.new(0.03, 0, 0.25, 0)
-MainFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
-MainFrame.Active = true
-MainFrame.Draggable = true
-MainFrame.Parent = ScreenGui
-
-local UICornerMain = Instance.new("UICorner", MainFrame)
-UICornerMain.CornerRadius = UDim.new(0,12)
-
-local UIGradient = Instance.new("UIGradient", MainFrame)
-UIGradient.Color = ColorSequence.new{
-    ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 100, 50)),
-    ColorSequenceKeypoint.new(1, Color3.fromRGB(60, 20, 20))
-}
-UIGradient.Rotation = 90
-
--- Title
-local Title = Instance.new("TextLabel")
-Title.Size = UDim2.new(1, -35, 0, 35)
-Title.Position = UDim2.new(0,8,0,0)
-Title.BackgroundTransparency = 1
-Title.Text = "😎 JoshroxasScriptTP"
-Title.TextColor3 = Color3.fromRGB(255,200,100)
-Title.Font = Enum.Font.Fantasy
-Title.TextSize = 17
-Title.TextXAlignment = Enum.TextXAlignment.Left
-Title.Parent = MainFrame
-
--- Minimize Button
-local MinBtn = Instance.new("TextButton")
-MinBtn.Size = UDim2.new(0,28,0,28)
-MinBtn.Position = UDim2.new(1,-32,0,4)
-MinBtn.BackgroundColor3 = Color3.fromRGB(50,25,25)
-MinBtn.TextColor3 = Color3.fromRGB(255,180,120)
-MinBtn.Text = "-"
-MinBtn.Font = Enum.Font.SourceSansBold
-MinBtn.TextSize = 20
-MinBtn.Parent = MainFrame
-
-local MinUICorner = Instance.new("UICorner", MinBtn)
-MinUICorner.CornerRadius = UDim.new(0,6)
-
-local Minimized = false
-MinBtn.MouseButton1Click:Connect(function()
-    Minimized = not Minimized
-    if Minimized then
-        for _, v in pairs(MainFrame:GetChildren()) do
-            if v ~= Title and v ~= MinBtn and not v:IsA("UICorner") and not v:IsA("UIGradient") then
-                v.Visible = false
-            end
-        end
-        MainFrame.Size = UDim2.new(0,220,0,40)
-        MinBtn.Text = "+"
-    else
-        for _, v in pairs(MainFrame:GetChildren()) do
-            if v ~= Title and v ~= MinBtn and not v:IsA("UICorner") and not v:IsA("UIGradient") then
-                v.Visible = true
-            end
-        end
-        MainFrame.Size = UDim2.new(0,220,0,280)
-        MinBtn.Text = "-"
-    end
-end)
-
--- Auto Accept Toggle
-local SwitchLabel = Instance.new("TextLabel")
-SwitchLabel.Size = UDim2.new(0,130,0,25)
-SwitchLabel.Position = UDim2.new(0,10,0,45)
-SwitchLabel.BackgroundTransparency = 1
-SwitchLabel.Text = "Auto Accept Gift"
-SwitchLabel.TextColor3 = Color3.fromRGB(255,255,255)
-SwitchLabel.TextXAlignment = Enum.TextXAlignment.Left
-SwitchLabel.Font = Enum.Font.SourceSansBold
-SwitchLabel.TextSize = 12
-SwitchLabel.Parent = MainFrame
-
-local SwitchFrame = Instance.new("TextButton")
-SwitchFrame.Size = UDim2.new(0,45,0,22)
-SwitchFrame.Position = UDim2.new(0,150,0,47)
-SwitchFrame.BackgroundColor3 = Color3.fromRGB(80,40,40)
-SwitchFrame.Text = ""
-SwitchFrame.Parent = MainFrame
-
-local Knob = Instance.new("Frame")
-Knob.Size = UDim2.new(0,20,0,20)
-Knob.Position = UDim2.new(0,1,0,1)
-Knob.BackgroundColor3 = Color3.fromRGB(200,50,50)
-Knob.Parent = SwitchFrame
-
-local UICorner1 = Instance.new("UICorner", SwitchFrame)
-UICorner1.CornerRadius = UDim.new(0,12)
-local UICorner2 = Instance.new("UICorner", Knob)
-UICorner2.CornerRadius = UDim.new(0,12)
-
-local function ToggleSwitch()
-    getgenv().AutoAccept = not getgenv().AutoAccept
-    if getgenv().AutoAccept then
-        Knob:TweenPosition(UDim2.new(0,23,0,1),"Out","Sine",0.2,true)
-        Knob.BackgroundColor3 = Color3.fromRGB(50,200,50)
-        sendWebhook(string.format("✅ **Auto Accept Enabled** by %s", LocalPlayer.Name))
-    else
-        Knob:TweenPosition(UDim2.new(0,1,0,1),"Out","Sine",0.2,true)
-        Knob.BackgroundColor3 = Color3.fromRGB(200,50,50)
-        sendWebhook(string.format("⛔ **Auto Accept Disabled** by %s", LocalPlayer.Name))
-    end
-end
-SwitchFrame.MouseButton1Click:Connect(ToggleSwitch) 
-
--- Player list & teleport
-local PlayerList = Instance.new("ScrollingFrame")
-PlayerList.Size = UDim2.new(1,-20,0,110)
-PlayerList.Position = UDim2.new(0,10,0,80)
-PlayerList.BackgroundTransparency = 1
-PlayerList.ScrollBarThickness = 5
-PlayerList.Parent = MainFrame
-
-local UIList = Instance.new("UIListLayout")
-UIList.Padding = UDim.new(0,4)
-UIList.Parent = PlayerList
-
-local function teleportToPlayer(target)
+--// TELEPORT TO PLAYER
+function teleportToPlayer(target)
     if target.Character and target.Character:FindFirstChild("HumanoidRootPart") and
        LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
         LocalPlayer.Character.HumanoidRootPart.CFrame = target.Character.HumanoidRootPart.CFrame
+        warn("🌀 Teleported to:", target.Name)
+
         sendWebhook(string.format("🌀 **Teleport Used**\n📌 %s teleported to %s", LocalPlayer.Name, target.Name))
     end
 end
 
-local function refreshPlayerList()
-    for _, btn in pairs(PlayerList:GetChildren()) do
-        if btn:IsA("TextButton") then btn:Destroy() end
-    end
-    for _, plr in pairs(Players:GetPlayers()) do
-        if plr ~= LocalPlayer then
-            local Btn = Instance.new("TextButton")
-            Btn.Size = UDim2.new(1,-10,0,22)
-            Btn.BackgroundColor3 = Color3.fromRGB(60,30,30)
-            Btn.TextColor3 = Color3.fromRGB(255,200,120)
-            Btn.Font = Enum.Font.SourceSansBold
-            Btn.TextSize = 13
-            Btn.Text = plr.DisplayName
-            Btn.Parent = PlayerList
+--// SPECTATE PLAYER
+function spectatePlayer(plr)
+    if plr.Character and plr.Character:FindFirstChildOfClass("Humanoid") then
+        workspace.CurrentCamera.CameraSubject = plr.Character:FindFirstChildOfClass("Humanoid")
+        warn("📺 Now spectating:", plr.Name)
 
-            local BtnCorner = Instance.new("UICorner", Btn)
-            BtnCorner.CornerRadius = UDim.new(0,6)
-
-            Btn.MouseButton1Click:Connect(function()
-                teleportToPlayer(plr)
-            end)
-        end
+        sendWebhook(string.format("📺 **Spectate Started**\n👤 %s is spectating %s", LocalPlayer.Name, plr.Name))
     end
-    PlayerList.CanvasSize = UDim2.new(0,0,0,UIList.AbsoluteContentSize.Y + 10)
 end
 
-Players.PlayerAdded:Connect(refreshPlayerList)
-Players.PlayerRemoving:Connect(refreshPlayerList)
-refreshPlayerList()
-
--- Leave Button
-local LeaveButton = Instance.new("TextButton")
-LeaveButton.Size = UDim2.new(1,-20,0,28)
-LeaveButton.Position = UDim2.new(0,10,1,-32)
-LeaveButton.BackgroundColor3 = Color3.fromRGB(200,50,50)
-LeaveButton.TextColor3 = Color3.fromRGB(255,255,255)
-LeaveButton.Text = "❌ LEAVE KANA"
-LeaveButton.Font = Enum.Font.SourceSansBold
-LeaveButton.TextSize = 14
-LeaveButton.Parent = MainFrame
-
-local LeaveCorner = Instance.new("UICorner", LeaveButton)
-LeaveCorner.CornerRadius = UDim.new(0,6)
-
-LeaveButton.MouseButton1Click:Connect(function()
-    sendWebhook(string.format("❌ **Leave Button Pressed** by %s", LocalPlayer.Name))
-    LocalPlayer:Kick("GAGO CONGRATS KUNG NAKANAKAW KA🤣")
-end)
-
--- ALWAYS-ON FEATURES
-RunService.Stepped:Connect(function()
-    if LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid") then
-        LocalPlayer.Character:FindFirstChildOfClass("Humanoid").WalkSpeed = 110
-    end
-end)
-
-UserInputService.JumpRequest:Connect(function()
-    if LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid") then
-        LocalPlayer.Character:FindFirstChildOfClass("Humanoid"):ChangeState(Enum.HumanoidStateType.Jumping)
-    end
-end)
-
-RunService.Stepped:Connect(function()
-    if LocalPlayer.Character then
-        for _, part in pairs(LocalPlayer.Character:GetDescendants()) do
-            if part:IsA("BasePart") and part.CanCollide then
-                part.CanCollide = false
-            end
-        end
-    end
-end) 
-
---// SPECTATE GUI
-local SpectateGui = Instance.new("ScreenGui")
-SpectateGui.Name = "SpectateGui"
-SpectateGui.Parent = game:GetService("CoreGui")
-
-local SpecFrame = Instance.new("Frame")
-SpecFrame.Size = UDim2.new(0, 175, 0, 219)
-SpecFrame.Position = UDim2.new(0.7, 0, 0.2, 0)
-SpecFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
-SpecFrame.Active = true
-SpecFrame.Draggable = true
-SpecFrame.Parent = SpectateGui
-
-local SpecCorner = Instance.new("UICorner", SpecFrame)
-SpecCorner.CornerRadius = UDim.new(0, 10)
-
-local SpecTitle = Instance.new("TextLabel")
-SpecTitle.Size = UDim2.new(1, -9, 0, 28)
-SpecTitle.Position = UDim2.new(0, 6, 0, 2)
-SpecTitle.BackgroundTransparency = 1
-SpecTitle.Text = "🎥 Spectate Players"
-SpecTitle.TextColor3 = Color3.fromRGB(255, 200, 120)
-SpecTitle.Font = Enum.Font.SourceSansBold
-SpecTitle.TextSize = 15
-SpecTitle.TextXAlignment = Enum.TextXAlignment.Left
-SpecTitle.Parent = SpecFrame
-
-local SpecList = Instance.new("ScrollingFrame")
-SpecList.Size = UDim2.new(1, -10, 1, -60)
-SpecList.Position = UDim2.new(0, 5, 0, 35)
-SpecList.BackgroundTransparency = 1
-SpecList.ScrollBarThickness = 4
-SpecList.Parent = SpecFrame
-
-local SpecListLayout = Instance.new("UIListLayout")
-SpecListLayout.Padding = UDim.new(0, 3)
-SpecListLayout.Parent = SpecList 
-
-local StopBtn = Instance.new("TextButton")
-StopBtn.Size = UDim2.new(1, -10, 0, 25)
-StopBtn.Position = UDim2.new(0, 5, 1, -28)
-StopBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
-StopBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-StopBtn.Font = Enum.Font.SourceSansBold
-StopBtn.TextSize = 14
-StopBtn.Text = "⛔ Stop Spectating"
-StopBtn.Parent = SpecFrame
-
-local StopCorner = Instance.new("UICorner", StopBtn)
-StopCorner.CornerRadius = UDim.new(0, 6)
-
-local function refreshSpectateList()
-    for _, btn in pairs(SpecList:GetChildren()) do
-        if btn:IsA("TextButton") then btn:Destroy() end
-    end
-    for _, plr in pairs(Players:GetPlayers()) do
-        if plr ~= LocalPlayer then
-            local Btn = Instance.new("TextButton")
-            Btn.Size = UDim2.new(1, -5, 0, 22)
-            Btn.BackgroundColor3 = Color3.fromRGB(60, 30, 30)
-            Btn.TextColor3 = Color3.fromRGB(255, 200, 120)
-            Btn.Font = Enum.Font.SourceSansBold
-            Btn.TextSize = 13
-            Btn.Text = plr.DisplayName
-            Btn.Parent = SpecList
-
-            local BtnCorner = Instance.new("UICorner", Btn)
-            BtnCorner.CornerRadius = UDim.new(0, 6)
-
-            Btn.MouseButton1Click:Connect(function()
-                workspace.CurrentCamera.CameraSubject = plr.Character:FindFirstChildOfClass("Humanoid")
-                sendWebhook(string.format("📺 **Spectating**\n👤 %s is now spectating %s", LocalPlayer.Name, plr.Name))
-            end)
-        end
-    end
-    SpecList.CanvasSize = UDim2.new(0, 0, 0, SpecListLayout.AbsoluteContentSize.Y + 5)
-end
-
-Players.PlayerAdded:Connect(refreshSpectateList)
-Players.PlayerRemoving:Connect(refreshSpectateList)
-refreshSpectateList()
-
-StopBtn.MouseButton1Click:Connect(function()
+--// STOP SPECTATING
+function stopSpectating()
     if LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid") then
         workspace.CurrentCamera.CameraSubject = LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
-        sendWebhook(string.format("⛔ **Stopped Spectating**\n👤 Back to %s", LocalPlayer.Name))
+        warn("⛔ Stopped spectating, back to self.")
+
+        sendWebhook(string.format("⛔ **Spectate Stopped**\n👤 Back to %s", LocalPlayer.Name))
     end
-end)
+end
+
+--// LEAVE GAME
+function leaveGame()
+    sendWebhook(string.format("❌ **Player Left Using Script**\n👤 %s clicked Leave button", LocalPlayer.Name))
+    LocalPlayer:Kick("GAGO CONGRATS KUNG NAKANAKAW KA🤣")
+end
+
+--// Dito mo na lang i-hook yung mga UI buttons mo:
+-- Teleport Button ➝ teleportToPlayer(player)
+-- Spectate Button ➝ spectatePlayer(player)
+-- Stop Spectate Button ➝ stopSpectating()
+-- Leave Button ➝ leaveGame()
