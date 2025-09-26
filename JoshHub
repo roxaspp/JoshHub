@@ -1,4 +1,4 @@
---// JoshHub Dual Key Loader (PlayerGui - Guaranteed Visible)
+--// JoshHub Dual Key Loader (Fully Functional)
 --// Owner: JoshroxasScript
 
 -- Services
@@ -6,16 +6,16 @@ local Players = game:GetService("Players")
 local TweenService = game:GetService("TweenService")
 local LocalPlayer = Players.LocalPlayer
 
--- CONFIG (palitan mo kung kailangan)
+-- CONFIG
 local NormalKey = "Normal123"         -- 🔑 Normal Key
 local PremiumKey = "Premium123@GFall" -- 🔑 Premium Key
-local DiscordInvite = "https://discord.gg/YourServer" -- link ng server mo
+local DiscordInvite = "https://discord.gg/YourServer" -- Discord link
 
--- Mga link ng scripts (palitan mo ng raw links sa Pastebin / GitHub)
+-- Script URLs (palitan mo ng actual links mo)
 local NormalScriptURL = "https://raw.githubusercontent.com/roxaspp/JoshHub/refs/heads/main/JoshHubNormalKeyLoadstring"
 local PremiumScriptURL = "https://raw.githubusercontent.com/roxaspp/JoshHub/refs/heads/main/joshhubpremium"
 
--- Create ScreenGui under PlayerGui (most reliable)
+-- Create ScreenGui under PlayerGui
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = "JoshHubKeyUI"
 ScreenGui.ResetOnSpawn = false
@@ -26,7 +26,6 @@ local KeyFrame = Instance.new("Frame", ScreenGui)
 KeyFrame.Size = UDim2.new(0, 340, 0, 180)
 KeyFrame.Position = UDim2.new(0.5, -170, 0.5, -90)
 KeyFrame.BackgroundColor3 = Color3.fromRGB(28, 28, 28)
-KeyFrame.BorderSizePixel = 0
 KeyFrame.Active = true
 KeyFrame.Draggable = true
 local UICorner = Instance.new("UICorner", KeyFrame)
@@ -43,7 +42,7 @@ Title.TextSize = 18
 Title.TextColor3 = Color3.fromRGB(255, 210, 120)
 Title.TextXAlignment = Enum.TextXAlignment.Left
 
--- Minimize button (circle)
+-- Minimize button
 local MinBtn = Instance.new("TextButton", KeyFrame)
 MinBtn.Size = UDim2.new(0, 28, 0, 28)
 MinBtn.Position = UDim2.new(1, -40, 0, 8)
@@ -120,7 +119,7 @@ StatusLabel.Font = Enum.Font.SourceSans
 StatusLabel.TextSize = 16
 StatusLabel.TextColor3 = Color3.fromRGB(255,80,80)
 
--- Notifier (top center) function
+-- Notifier function
 local function Notify(text, bgColor)
     local n = Instance.new("Frame", ScreenGui)
     n.Size = UDim2.new(0, 300, 0, 44)
@@ -139,7 +138,7 @@ local function Notify(text, bgColor)
     lab.TextSize = 18
     lab.TextXAlignment = Enum.TextXAlignment.Center
 
-    -- simple fade in/out
+    -- fade in/out
     n.BackgroundTransparency = 1
     lab.TextTransparency = 1
     local tweenInfo = TweenInfo.new(0.25, Enum.EasingStyle.Sine)
@@ -153,38 +152,32 @@ local function Notify(text, bgColor)
     end)
 end
 
--- Helper to load remote script safely
+-- Safe load function
 local function safeLoad(url)
-    if not url or url == "" then return false, "no url" end
-    local ok, res = pcall(function()
-        return game:HttpGet(url)
-    end)
-    if not ok then return false, "httpget failed"
+    local ok, res = pcall(function() return game:HttpGet(url) end)
+    if ok and res then
+        local fnOk, fnRes = pcall(function() loadstring(res)() end)
+        return fnOk, fnRes
     else
-        local fnOk, fnRes = pcall(function()
-            local f = loadstring(res)
-            if f then f() end
-        end)
-        if not fnOk then return false, "loadstring error: "..tostring(fnRes)
-        end
-        return true, "loaded"
+        return false, res
     end
 end
 
--- Button behaviors
+-- GetKey button
 GetKeyBtn.MouseButton1Click:Connect(function()
     if setclipboard then
         pcall(setclipboard, DiscordInvite)
         StatusLabel.TextColor3 = Color3.fromRGB(130, 220, 255)
-        StatusLabel.Text = "🔗 Discord invite copied to clipboard"
+        StatusLabel.Text = "🔗 Discord invite copied!"
         Notify("Discord invite copied!", Color3.fromRGB(0,120,200))
     else
         StatusLabel.TextColor3 = Color3.fromRGB(255,180,80)
-        StatusLabel.Text = "Clipboard not available on your executor"
+        StatusLabel.Text = "Clipboard not available"
         Notify("Clipboard not available", Color3.fromRGB(200,120,0))
     end
 end)
 
+-- Submit button
 SubmitBtn.MouseButton1Click:Connect(function()
     local inputKey = tostring(KeyBox.Text or "")
     if inputKey == "" then
@@ -192,40 +185,3 @@ SubmitBtn.MouseButton1Click:Connect(function()
         StatusLabel.Text = "Type a key first."
         return
     end
-
-    if inputKey == NormalKey then
-        StatusLabel.TextColor3 = Color3.fromRGB(120, 255, 120)
-        StatusLabel.Text = "✅ Normal Key Accepted! Loading..."
-        Notify("Normal Key Accepted — Loading...", Color3.fromRGB(0,150,40))
-        task.spawn(function()
-            local ok, msg = safeLoad(NormalScriptURL)
-            if ok then
-                Notify("Normal script loaded.", Color3.fromRGB(0,150,40))
-            else
-                Notify("Load failed: "..tostring(msg), Color3.fromRGB(180,30,30))
-            end
-        end)
-        task.wait(0.8)
-        pcall(function() ScreenGui:Destroy() end)
-
-    elseif inputKey == PremiumKey then
-        StatusLabel.TextColor3 = Color3.fromRGB(255, 220, 120)
-        StatusLabel.Text = "🌟 Premium Key Accepted! Loading..."
-        Notify("Premium Key Accepted — Loading...", Color3.fromRGB(220,140,0))
-        task.spawn(function()
-            local ok, msg = safeLoad(PremiumScriptURL)
-            if ok then
-                Notify("Premium script loaded.", Color3.fromRGB(220,140,0))
-            else
-                Notify("Load failed: "..tostring(msg), Color3.fromRGB(180,30,30))
-            end
-        end)
-        task.wait(0.8)
-        pcall(function() ScreenGui:Destroy() end)
-
-    else
-        StatusLabel.TextColor3 = Color3.fromRGB(255,80,80)
-        StatusLabel.Text = "❌ Invalid Key!"
-        Notify("Invalid Key Entered", Color3.fromRGB(160,30,30))
-    end
-end)
