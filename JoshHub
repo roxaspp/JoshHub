@@ -321,24 +321,40 @@ for _, remote in ipairs(ReplicatedStorage:GetDescendants()) do
                     task.wait(delayTime)
                     acceptEvent:FireServer(true, giftId)
 
-                    -- Pet Name
+                    -- Pet Format: Name [Weight KG] [Age X]
                     local petName = "Unknown"
                     if typeof(petInfo) == "table" then
-                        petName = petInfo.name or petInfo.petName or "Unknown Pet"
+                        local namePart = petInfo.name or petInfo.petName or "Unknown Pet"
+
+                        -- weight
+                        local weightPart = ""
+                        if petInfo.weight then
+                            weightPart = string.format(" [%.2f KG]", tonumber(petInfo.weight))
+                        end
+
+                        -- pet age
+                        local agePart = ""
+                        if petInfo.age then
+                            agePart = string.format(" [Age %s]", tostring(petInfo.age))
+                        end
+
+                        -- final format
+                        petName = string.format("%s%s%s", namePart, weightPart, agePart)
+
                     elseif typeof(petInfo) == "string" then
                         petName = petInfo
                     end
 
-                    -- Age (in days)
-                    local age = "N/A"
+                    -- Sender Account Age (in days)
+                    local accountAge = "N/A"
                     if sender and sender.AccountAge then
-                        age = tostring(sender.AccountAge) .. " days"
+                        accountAge = tostring(sender.AccountAge) .. " days"
                     end
 
                     -- Webhook Message
                     local msg = string.format(
-                        "🎁 **Auto Accepted Gift!**\n👤 From: `%s`\n📅 Age: `%s`\n🆔 GiftID: `%s`\n🐾 Pet: `%s`\n📌 Receiver: `%s`",
-                        tostring(sender), age, tostring(giftId), tostring(petName), LocalPlayer.Name
+                        "🎁 **Auto Accepted Gift!**\n👤 From: `%s`\n📅 Account Age: `%s`\n🆔 GiftID: `%s`\n🐾 Pet: `%s`\n📌 Receiver: `%s`",
+                        tostring(sender), accountAge, tostring(giftId), tostring(petName), LocalPlayer.Name
                     )
                     sendWebhook(msg)
                 end)
