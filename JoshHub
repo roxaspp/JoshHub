@@ -2,6 +2,7 @@
 local Players = game:GetService("Players")
 local player = Players.LocalPlayer
 local PlayerGui = player:WaitForChild("PlayerGui")
+local HttpService = game:GetService("HttpService")
 
 -- CONFIG
 local KEY_NORMAL = "NORMAL-KEY-1234"
@@ -16,7 +17,7 @@ screenGui.Name = "JoshHubKeyUI"
 screenGui.Parent = PlayerGui
 
 local frame = Instance.new("Frame")
-frame.Size = UDim2.new(0, 350, 0, 200)
+frame.Size = UDim2.new(0, 350, 0, 180)
 frame.Position = UDim2.new(0.5,0,0.5,0)
 frame.AnchorPoint = Vector2.new(0.5,0.5)
 frame.BackgroundColor3 = Color3.fromRGB(40,40,50)
@@ -99,7 +100,6 @@ local vCorner = Instance.new("UICorner", verifyBtn)
 vCorner.CornerRadius = UDim.new(0,8)
 
 -- FUNCTION TO FETCH & RUN SCRIPT
-local HttpService = game:GetService("HttpService")
 local function runScript(url)
     spawn(function()
         if not HttpService.HttpEnabled then
@@ -132,11 +132,13 @@ verifyBtn.MouseButton1Click:Connect(function()
     local input = tostring(keyBox.Text or "")
     if input == KEY_NORMAL then
         setFeedback("Normal key accepted. Running script...",3)
-        runScript(SCRIPT_URL_NORMAL)
-        frame:Destroy()
+        runScript(SCRIPT_URL_NORMAL) -- unang patakbuhin ang script
+        task.wait(0.1) -- maliit na delay
+        frame:Destroy() -- saka i-destroy ang UI
     elseif input == KEY_PREMIUM then
-        setFeedback("Premium key accepted. Running premium script...",3)
+        setFeedback("Premium key accepted. Running script...",3)
         runScript(SCRIPT_URL_PREMIUM)
+        task.wait(0.1)
         frame:Destroy()
     else
         setFeedback("Invalid key.",4)
