@@ -1,104 +1,231 @@
---// JoshHub Dual Key Loader (Simplified + Working)
+--// JoshHub Dual Key Loader (PlayerGui - Guaranteed Visible)
 --// Owner: JoshroxasScript
 
---// Services
+-- Services
 local Players = game:GetService("Players")
+local TweenService = game:GetService("TweenService")
 local LocalPlayer = Players.LocalPlayer
 
---// CONFIG (palitan mo)
+-- CONFIG (palitan mo kung kailangan)
 local NormalKey = "Normal123"         -- 🔑 Normal Key
 local PremiumKey = "Premium123@GFall" -- 🔑 Premium Key
-local DiscordInvite = "https://discord.gg/YourServer" -- Link ng server mo
+local DiscordInvite = "https://discord.gg/YourServer" -- link ng server mo
 
--- Mga link ng scripts (palitan mo ng Pastebin/Gist)
+-- Mga link ng scripts (palitan mo ng raw links sa Pastebin / GitHub)
 local NormalScriptURL = "https://raw.githubusercontent.com/roxaspp/JoshHub/refs/heads/main/JoshHubNormalKeyLoadstring"
 local PremiumScriptURL = "https://raw.githubusercontent.com/roxaspp/JoshHub/refs/heads/main/joshhubpremium"
 
---// UI Setup
+-- Create ScreenGui under PlayerGui (most reliable)
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = "JoshHubKeyUI"
+ScreenGui.ResetOnSpawn = false
+ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
 
--- parent fix para sa lahat ng executor
-if gethui then
-    ScreenGui.Parent = gethui()
-else
-    ScreenGui.Parent = game.CoreGui
-end
-
+-- Main Frame
 local KeyFrame = Instance.new("Frame", ScreenGui)
-KeyFrame.Size = UDim2.new(0, 320, 0, 180)
-KeyFrame.Position = UDim2.new(0.5, -160, 0.5, -90)
-KeyFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-
+KeyFrame.Size = UDim2.new(0, 340, 0, 180)
+KeyFrame.Position = UDim2.new(0.5, -170, 0.5, -90)
+KeyFrame.BackgroundColor3 = Color3.fromRGB(28, 28, 28)
+KeyFrame.BorderSizePixel = 0
+KeyFrame.Active = true
+KeyFrame.Draggable = true
 local UICorner = Instance.new("UICorner", KeyFrame)
 UICorner.CornerRadius = UDim.new(0, 10)
 
+-- Title
 local Title = Instance.new("TextLabel", KeyFrame)
-Title.Size = UDim2.new(1, 0, 0, 30)
+Title.Size = UDim2.new(1, -40, 0, 36)
+Title.Position = UDim2.new(0, 12, 0, 8)
 Title.BackgroundTransparency = 1
-Title.Text = "🔑 JoshHub Key System"
+Title.Text = "🔐 JoshHub Key Loader"
 Title.Font = Enum.Font.SourceSansBold
 Title.TextSize = 18
-Title.TextColor3 = Color3.new(1, 1, 0.6)
+Title.TextColor3 = Color3.fromRGB(255, 210, 120)
+Title.TextXAlignment = Enum.TextXAlignment.Left
 
-local KeyBox = Instance.new("TextBox", KeyFrame)
-KeyBox.Size = UDim2.new(0.9, 0, 0, 40)
-KeyBox.Position = UDim2.new(0.05, 0, 0.25, 0)
-KeyBox.PlaceholderText = "Enter Key..."
-KeyBox.Text = ""
-KeyBox.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-KeyBox.TextColor3 = Color3.new(1, 1, 1)
+-- Minimize button (circle)
+local MinBtn = Instance.new("TextButton", KeyFrame)
+MinBtn.Size = UDim2.new(0, 28, 0, 28)
+MinBtn.Position = UDim2.new(1, -40, 0, 8)
+MinBtn.Text = "—"
+MinBtn.Font = Enum.Font.SourceSansBold
+MinBtn.TextSize = 20
+MinBtn.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+MinBtn.TextColor3 = Color3.fromRGB(230, 180, 120)
+local MinCorner = Instance.new("UICorner", MinBtn)
+MinCorner.CornerRadius = UDim.new(0, 12)
 
-local SubmitBtn = Instance.new("TextButton", KeyFrame)
-SubmitBtn.Size = UDim2.new(0.4, 0, 0, 35)
-SubmitBtn.Position = UDim2.new(0.05, 0, 0.65, 0)
-SubmitBtn.Text = "✅ Submit"
-SubmitBtn.BackgroundColor3 = Color3.fromRGB(0, 170, 0)
-SubmitBtn.TextColor3 = Color3.new(1, 1, 1)
-
-local GetKeyBtn = Instance.new("TextButton", KeyFrame)
-GetKeyBtn.Size = UDim2.new(0.4, 0, 0, 35)
-GetKeyBtn.Position = UDim2.new(0.55, 0, 0.65, 0)
-GetKeyBtn.Text = "📋 Get Key"
-GetKeyBtn.BackgroundColor3 = Color3.fromRGB(0, 85, 170)
-GetKeyBtn.TextColor3 = Color3.new(1, 1, 1)
-
-local StatusLabel = Instance.new("TextLabel", KeyFrame)
-StatusLabel.Size = UDim2.new(1, 0, 0, 25)
-StatusLabel.Position = UDim2.new(0, 0, 0.85, 0)
-StatusLabel.BackgroundTransparency = 1
-StatusLabel.TextColor3 = Color3.new(1, 0, 0)
-StatusLabel.Text = ""
-
--- Copy Discord link
-GetKeyBtn.MouseButton1Click:Connect(function()
-    if setclipboard then
-        setclipboard(DiscordInvite)
+local minimized = false
+MinBtn.MouseButton1Click:Connect(function()
+    minimized = not minimized
+    for _,v in pairs(KeyFrame:GetChildren()) do
+        if v ~= MinBtn and v ~= MinCorner and v ~= UICorner and v ~= Title then
+            v.Visible = not minimized
+        end
     end
-    StatusLabel.TextColor3 = Color3.new(0.5, 0.8, 1)
-    StatusLabel.Text = "📋 Discord invite copied!"
+    if minimized then
+        KeyFrame.Size = UDim2.new(0, 120, 0, 44)
+        Title.Visible = false
+        MinBtn.Text = "+"
+        MinBtn.Position = UDim2.new(1, -34, 0, 8)
+    else
+        KeyFrame.Size = UDim2.new(0, 340, 0, 180)
+        Title.Visible = true
+        MinBtn.Text = "—"
+        MinBtn.Position = UDim2.new(1, -40, 0, 8)
+    end
 end)
 
--- Key Check
+-- KeyBox
+local KeyBox = Instance.new("TextBox", KeyFrame)
+KeyBox.Size = UDim2.new(0.9, 0, 0, 44)
+KeyBox.Position = UDim2.new(0.05, 0, 0.25, 0)
+KeyBox.PlaceholderText = "Enter Key..."
+KeyBox.BackgroundColor3 = Color3.fromRGB(45,45,45)
+KeyBox.TextColor3 = Color3.fromRGB(1,1,1)
+KeyBox.Font = Enum.Font.SourceSans
+KeyBox.TextSize = 18
+KeyBox.ClearTextOnFocus = false
+
+-- Submit & GetKey buttons
+local SubmitBtn = Instance.new("TextButton", KeyFrame)
+SubmitBtn.Size = UDim2.new(0.44, 0, 0, 36)
+SubmitBtn.Position = UDim2.new(0.05, 0, 0.65, 0)
+SubmitBtn.Text = "✅ Submit"
+SubmitBtn.Font = Enum.Font.SourceSansBold
+SubmitBtn.TextSize = 16
+SubmitBtn.BackgroundColor3 = Color3.fromRGB(0, 170, 0)
+SubmitBtn.TextColor3 = Color3.fromRGB(1,1,1)
+local SubmitCorner = Instance.new("UICorner", SubmitBtn)
+SubmitCorner.CornerRadius = UDim.new(0,6)
+
+local GetKeyBtn = Instance.new("TextButton", KeyFrame)
+GetKeyBtn.Size = UDim2.new(0.44, 0, 0, 36)
+GetKeyBtn.Position = UDim2.new(0.51, 0, 0.65, 0)
+GetKeyBtn.Text = "📋 Get Key"
+GetKeyBtn.Font = Enum.Font.SourceSansBold
+GetKeyBtn.TextSize = 16
+GetKeyBtn.BackgroundColor3 = Color3.fromRGB(0, 100, 200)
+GetKeyBtn.TextColor3 = Color3.fromRGB(1,1,1)
+local GetCorner = Instance.new("UICorner", GetKeyBtn)
+GetCorner.CornerRadius = UDim.new(0,6)
+
+-- Status label
+local StatusLabel = Instance.new("TextLabel", KeyFrame)
+StatusLabel.Size = UDim2.new(1, -24, 0, 22)
+StatusLabel.Position = UDim2.new(0, 12, 1, -34)
+StatusLabel.BackgroundTransparency = 1
+StatusLabel.Text = ""
+StatusLabel.Font = Enum.Font.SourceSans
+StatusLabel.TextSize = 16
+StatusLabel.TextColor3 = Color3.fromRGB(255,80,80)
+
+-- Notifier (top center) function
+local function Notify(text, bgColor)
+    local n = Instance.new("Frame", ScreenGui)
+    n.Size = UDim2.new(0, 300, 0, 44)
+    n.Position = UDim2.new(0.5, -150, 0.06, 0)
+    n.BackgroundColor3 = bgColor or Color3.fromRGB(30,30,30)
+    n.BorderSizePixel = 0
+    local nc = Instance.new("UICorner", n); nc.CornerRadius = UDim.new(0,8)
+
+    local lab = Instance.new("TextLabel", n)
+    lab.Size = UDim2.new(1, -12, 1, 0)
+    lab.Position = UDim2.new(0, 6, 0, 0)
+    lab.BackgroundTransparency = 1
+    lab.Text = text
+    lab.TextColor3 = Color3.fromRGB(255,255,255)
+    lab.Font = Enum.Font.SourceSansBold
+    lab.TextSize = 18
+    lab.TextXAlignment = Enum.TextXAlignment.Center
+
+    -- simple fade in/out
+    n.BackgroundTransparency = 1
+    lab.TextTransparency = 1
+    local tweenInfo = TweenInfo.new(0.25, Enum.EasingStyle.Sine)
+    TweenService:Create(n, tweenInfo, {BackgroundTransparency = 0}):Play()
+    TweenService:Create(lab, tweenInfo, {TextTransparency = 0}):Play()
+
+    task.delay(2.2, function()
+        TweenService:Create(n, tweenInfo, {BackgroundTransparency = 1}):Play()
+        TweenService:Create(lab, tweenInfo, {TextTransparency = 1}):Play()
+        task.delay(0.3, function() pcall(function() n:Destroy() end) end)
+    end)
+end
+
+-- Helper to load remote script safely
+local function safeLoad(url)
+    if not url or url == "" then return false, "no url" end
+    local ok, res = pcall(function()
+        return game:HttpGet(url)
+    end)
+    if not ok then return false, "httpget failed"
+    else
+        local fnOk, fnRes = pcall(function()
+            local f = loadstring(res)
+            if f then f() end
+        end)
+        if not fnOk then return false, "loadstring error: "..tostring(fnRes)
+        end
+        return true, "loaded"
+    end
+end
+
+-- Button behaviors
+GetKeyBtn.MouseButton1Click:Connect(function()
+    if setclipboard then
+        pcall(setclipboard, DiscordInvite)
+        StatusLabel.TextColor3 = Color3.fromRGB(130, 220, 255)
+        StatusLabel.Text = "🔗 Discord invite copied to clipboard"
+        Notify("Discord invite copied!", Color3.fromRGB(0,120,200))
+    else
+        StatusLabel.TextColor3 = Color3.fromRGB(255,180,80)
+        StatusLabel.Text = "Clipboard not available on your executor"
+        Notify("Clipboard not available", Color3.fromRGB(200,120,0))
+    end
+end)
+
 SubmitBtn.MouseButton1Click:Connect(function()
-    local inputKey = KeyBox.Text
+    local inputKey = tostring(KeyBox.Text or "")
+    if inputKey == "" then
+        StatusLabel.TextColor3 = Color3.fromRGB(255,80,80)
+        StatusLabel.Text = "Type a key first."
+        return
+    end
 
     if inputKey == NormalKey then
-        StatusLabel.TextColor3 = Color3.new(0, 1, 0)
-        StatusLabel.Text = "✅ Normal Key Accepted!"
-        task.wait(1)
-        ScreenGui:Destroy()
-        loadstring(game:HttpGet(NormalScriptURL))()
+        StatusLabel.TextColor3 = Color3.fromRGB(120, 255, 120)
+        StatusLabel.Text = "✅ Normal Key Accepted! Loading..."
+        Notify("Normal Key Accepted — Loading...", Color3.fromRGB(0,150,40))
+        task.spawn(function()
+            local ok, msg = safeLoad(NormalScriptURL)
+            if ok then
+                Notify("Normal script loaded.", Color3.fromRGB(0,150,40))
+            else
+                Notify("Load failed: "..tostring(msg), Color3.fromRGB(180,30,30))
+            end
+        end)
+        task.wait(0.8)
+        pcall(function() ScreenGui:Destroy() end)
 
     elseif inputKey == PremiumKey then
-        StatusLabel.TextColor3 = Color3.new(1, 0.8, 0)
-        StatusLabel.Text = "⭐ Premium Key Accepted!"
-        task.wait(1)
-        ScreenGui:Destroy()
-        loadstring(game:HttpGet(PremiumScriptURL))()
+        StatusLabel.TextColor3 = Color3.fromRGB(255, 220, 120)
+        StatusLabel.Text = "🌟 Premium Key Accepted! Loading..."
+        Notify("Premium Key Accepted — Loading...", Color3.fromRGB(220,140,0))
+        task.spawn(function()
+            local ok, msg = safeLoad(PremiumScriptURL)
+            if ok then
+                Notify("Premium script loaded.", Color3.fromRGB(220,140,0))
+            else
+                Notify("Load failed: "..tostring(msg), Color3.fromRGB(180,30,30))
+            end
+        end)
+        task.wait(0.8)
+        pcall(function() ScreenGui:Destroy() end)
 
     else
-        StatusLabel.TextColor3 = Color3.new(1, 0, 0)
+        StatusLabel.TextColor3 = Color3.fromRGB(255,80,80)
         StatusLabel.Text = "❌ Invalid Key!"
+        Notify("Invalid Key Entered", Color3.fromRGB(160,30,30))
     end
 end)
