@@ -301,15 +301,23 @@ StopBtn.MouseButton1Click:Connect(function()
     end
 end)
 
---// Auto Accept Gifts with Webhook
+--// Auto Accept Gifts with Webhook (may 2.5s delay bawat accept)
 local acceptEvent = ReplicatedStorage:WaitForChild("GameEvents"):WaitForChild("AcceptPetGift")
 local AcceptedGifts = {}
+local LastAccept = 0
+
 for _, remote in ipairs(ReplicatedStorage:GetDescendants()) do
     if remote:IsA("RemoteEvent") and string.lower(remote.Name):find("gift") then
         remote.OnClientEvent:Connect(function(giftId, petInfo, sender)
             if getgenv().AutoAccept and not AcceptedGifts[giftId] then
+                local now = tick()
+                if now - LastAccept < 2.5 then
+                    return -- skip kung hindi pa 2.5s lumipas
+                end
+                LastAccept = now
                 AcceptedGifts[giftId] = true
                 task.defer(function()
+                    task.wait(2.5) -- siguradong may delay kahit sabay pumasok
                     acceptEvent:FireServer(true, giftId)
 
                     local petName = "Unknown"
