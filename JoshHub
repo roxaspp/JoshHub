@@ -1,1 +1,189 @@
 
+-- Dual-Key Panel (Modern & Accurate)
+-- Place this LocalScript under StarterGui (ScreenGui)
+
+local Players = game:GetService("Players")
+local HttpService = game:GetService("HttpService")
+local player = Players.LocalPlayer
+
+-- CONFIG: set your keys and script URLs here
+local KEY_NORMAL = "NORMAL-KEY-1234"
+local KEY_PREMIUM = "PREMIUM-KEY-9876"
+local SCRIPT_URL_NORMAL = "https://raw.githubusercontent.com/roxaspp/JoshHub/refs/heads/main/JoshHubNormalKeyLoadstring"
+local SCRIPT_URL_PREMIUM = "https://raw.githubusercontent.com/roxaspp/JoshHub/refs/heads/main/joshhubpremium"
+local DISCORD_INVITE = "https://discord.gg/n2P7pxvq"
+
+-- CREATE SCREEN GUI
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "JoshHubKeyUI"
+screenGui.ResetOnSpawn = false
+screenGui.Parent = player:WaitForChild("PlayerGui")
+
+-- MAIN FRAME (Center, Modern Look)
+local frame = Instance.new("Frame")
+frame.Size = UDim2.new(0, 350, 0, 200)
+frame.Position = UDim2.new(0.5, 0, 0.5, 0)
+frame.AnchorPoint = Vector2.new(0.5, 0.5)
+frame.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
+frame.BorderSizePixel = 0
+frame.Parent = screenGui
+
+local uiCorner = Instance.new("UICorner", frame)
+uiCorner.CornerRadius = UDim.new(0, 12)
+
+-- SHADOW EFFECT
+local shadow = Instance.new("Frame")
+shadow.Size = UDim2.new(1, 8, 1, 8)
+shadow.Position = UDim2.new(0, -4, 0, -4)
+shadow.BackgroundColor3 = Color3.fromRGB(0,0,0)
+shadow.BackgroundTransparency = 0.75
+shadow.ZIndex = 0
+shadow.Parent = frame
+local shadowCorner = Instance.new("UICorner", shadow)
+shadowCorner.CornerRadius = UDim.new(0, 12)
+
+-- TITLE
+local title = Instance.new("TextLabel")
+title.Text = "🔐 JoshHub Dual Key Panel"
+title.Size = UDim2.new(1, -20, 0, 36)
+title.Position = UDim2.new(0, 10, 0, 10)
+title.BackgroundTransparency = 1
+title.TextColor3 = Color3.fromRGB(255, 220, 150)
+title.Font = Enum.Font.GothamBold
+title.TextSize = 20
+title.TextXAlignment = Enum.TextXAlignment.Left
+title.Parent = frame
+
+-- KEYBOX
+local keyBox = Instance.new("TextBox")
+keyBox.PlaceholderText = "Ilagay ang key dito"
+keyBox.Size = UDim2.new(1, -20, 0, 40)
+keyBox.Position = UDim2.new(0, 10, 0, 56)
+keyBox.BackgroundColor3 = Color3.fromRGB(60,60,70)
+keyBox.TextColor3 = Color3.fromRGB(240,240,240)
+keyBox.Font = Enum.Font.SourceSans
+keyBox.TextSize = 18
+keyBox.ClearTextOnFocus = false
+keyBox.Parent = frame
+local keyCorner = Instance.new("UICorner", keyBox)
+keyCorner.CornerRadius = UDim.new(0,8)
+
+-- FEEDBACK LABEL
+local feedback = Instance.new("TextLabel")
+feedback.Text = ""
+feedback.Size = UDim2.new(1, -20, 0, 24)
+feedback.Position = UDim2.new(0, 10, 1, -40)
+feedback.BackgroundTransparency = 1
+feedback.TextColor3 = Color3.fromRGB(200,200,200)
+feedback.Font = Enum.Font.Gotham
+feedback.TextSize = 14
+feedback.TextXAlignment = Enum.TextXAlignment.Left
+feedback.Parent = frame
+
+local function setFeedback(txt, timeout)
+    feedback.Text = txt
+    if timeout then
+        delay(timeout, function()
+            if feedback then feedback.Text = "" end
+        end)
+    end
+end
+
+-- HELPER: fetch and run script
+local function fetchAndExecute(url)
+    if not HttpService.HttpEnabled then
+        setFeedback("Enable HttpService muna.", 5)
+        return
+    end
+    spawn(function()
+        local ok,result = pcall(function() return game:HttpGet(url) end)
+        if not ok then
+            setFeedback("Download failed: "..tostring(result),6)
+            return
+        end
+        local ok2,fn = pcall(function() return loadstring(result) end)
+        if not ok2 or typeof(fn) ~= "function" then
+            setFeedback("Loadstring error.",6)
+            return
+        end
+        local ok3,res3 = pcall(fn)
+        if not ok3 then
+            setFeedback("Error habang pinapatakbo script: "..tostring(res3),6)
+            return
+        end
+        setFeedback("Script na-run nang successful!",4)
+    end)
+end
+
+-- BUTTON CREATION
+local function makeButton(text, y)
+    local btn = Instance.new("TextButton")
+    btn.Text = text
+    btn.Size = UDim2.new(1, -20, 0, 40)
+    btn.Position = UDim2.new(0, 10, 0, y)
+    btn.BackgroundColor3 = Color3.fromRGB(80,80,100)
+    btn.TextColor3 = Color3.fromRGB(255,255,255)
+    btn.Font = Enum.Font.GothamBold
+    btn.TextSize = 16
+    btn.Parent = frame
+    local c = Instance.new("UICorner", btn)
+    c.CornerRadius = UDim.new(0,8)
+    return btn
+end
+
+local normalBtn = makeButton("Use Normal Key", 110)
+local premiumBtn = makeButton("Use Premium Key", 155)
+
+-- GET KEY BUTTON (Discord)
+local getKeyBtn = Instance.new("TextButton")
+getKeyBtn.Text = "📋 Get Key / Discord"
+getKeyBtn.Size = UDim2.new(0, 160, 0, 32)
+getKeyBtn.Position = UDim2.new(1, -170, 0, 10)
+getKeyBtn.AnchorPoint = Vector2.new(1,0)
+getKeyBtn.BackgroundColor3 = Color3.fromRGB(50,50,80)
+getKeyBtn.TextColor3 = Color3.fromRGB(255,255,255)
+getKeyBtn.Font = Enum.Font.GothamBold
+getKeyBtn.TextSize = 14
+getKeyBtn.Parent = frame
+local gkCorner = Instance.new("UICorner", getKeyBtn)
+gkCorner.CornerRadius = UDim.new(0,8)
+
+-- BUTTON ACTIONS
+normalBtn.MouseButton1Click:Connect(function()
+    local input = tostring(keyBox.Text or "")
+    if input == KEY_NORMAL then
+        setFeedback("Normal key accepted. Running script...",3)
+        fetchAndExecute(SCRIPT_URL_NORMAL)
+    else
+        setFeedback("Invalid normal key.",4)
+    end
+end)
+
+premiumBtn.MouseButton1Click:Connect(function()
+    local input = tostring(keyBox.Text or "")
+    if input == KEY_PREMIUM then
+        setFeedback("Premium key accepted. Running premium script...",3)
+        fetchAndExecute(SCRIPT_URL_PREMIUM)
+    else
+        setFeedback("Invalid premium key.",4)
+    end
+end)
+
+getKeyBtn.MouseButton1Click:Connect(function()
+    local ok, err = pcall(function()
+        if setclipboard then
+            setclipboard(DISCORD_INVITE)
+            return true
+        end
+        return false
+    end)
+    if ok and err == true then
+        setFeedback("Discord invite copied to clipboard!",4)
+    else
+        keyBox.Text = DISCORD_INVITE
+        setFeedback("Discord invite inilagay sa box — i-Ctrl+C para kopyahin.",6)
+    end
+end)
+
+-- INITIAL FEEDBACK
+setFeedback("Ready. Ilagay ang key at piliin Normal o Premium.", 6)
