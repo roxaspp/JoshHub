@@ -25,8 +25,8 @@ screenGui.ResetOnSpawn = false
 screenGui.Parent = player:WaitForChild("PlayerGui")
 
 local frame = Instance.new("Frame")
-frame.Size = UDim2.new(0, 380, 0, 200)
-frame.Position = UDim2.new(0.5, -190, 0.5, -100)
+frame.Size = UDim2.new(0, 325, 0, 150)
+frame.Position = UDim2.new(0.5, -192, 0.5, -100)
 frame.AnchorPoint = Vector2.new(0.5, 0.5)
 frame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
 frame.BorderSizePixel = 0
