@@ -1,4 +1,4 @@
--- Single-Key Panel (LocalScript)
+-- Dual-Key Panel Compact + Get Key sa gilid
 local Players = game:GetService("Players")
 local player = Players.LocalPlayer
 local PlayerGui = player:WaitForChild("PlayerGui")
@@ -16,11 +16,13 @@ screenGui.Name = "JoshHubKeyUI"
 screenGui.Parent = PlayerGui
 
 local frame = Instance.new("Frame")
-frame.Size = UDim2.new(0, 350, 0, 200)
+frame.Size = UDim2.new(0, 350, 0, 220)
 frame.Position = UDim2.new(0.5,0,0.5,0)
 frame.AnchorPoint = Vector2.new(0.5,0.5)
 frame.BackgroundColor3 = Color3.fromRGB(40,40,50)
 frame.Parent = screenGui
+
+-- Draggable
 frame.Active = true
 frame.Draggable = true
 
@@ -29,7 +31,7 @@ uic.CornerRadius = UDim.new(0,12)
 
 -- TITLE
 local title = Instance.new("TextLabel", frame)
-title.Text = "🔐 JoshHub Key Panel"
+title.Text = "🔐 JoshHub Dual Key Panel"
 title.Size = UDim2.new(1, -40, 0, 36)
 title.Position = UDim2.new(0,10,0,10)
 title.BackgroundTransparency = 1
@@ -85,74 +87,77 @@ local function setFeedback(txt, timeout)
     end
 end
 
--- VERIFY BUTTON
-local verifyBtn = Instance.new("TextButton")
-verifyBtn.Text = "✅ Verify Key"
-verifyBtn.Size = UDim2.new(1, -20, 0, 40)
-verifyBtn.Position = UDim2.new(0,10,0,110)
-verifyBtn.BackgroundColor3 = Color3.fromRGB(80,80,100)
-verifyBtn.TextColor3 = Color3.fromRGB(255,255,255)
-verifyBtn.Font = Enum.Font.GothamBold
-verifyBtn.TextSize = 16
-verifyBtn.Parent = frame
-local vCorner = Instance.new("UICorner", verifyBtn)
-vCorner.CornerRadius = UDim.new(0,8)
+-- BUTTON HELPER
+local function makeButton(text,y)
+    local btn = Instance.new("TextButton")
+    btn.Text = text
+    btn.Size = UDim2.new(1,-20,0,40)
+    btn.Position = UDim2.new(0,10,0,y)
+    btn.BackgroundColor3 = Color3.fromRGB(80,80,100)
+    btn.TextColor3 = Color3.fromRGB(255,255,255)
+    btn.Font = Enum.Font.GothamBold
+    btn.TextSize = 16
+    btn.Parent = frame
+    local c = Instance.new("UICorner", btn)
+    c.CornerRadius = UDim.new(0,8)
+    return btn
+end
 
--- FUNCTION TO FETCH & RUN SCRIPT
-local HttpService = game:GetService("HttpService")
+local normalBtn = makeButton("Use Normal Key", 110)
+local premiumBtn = makeButton("Use Premium Key", 160)
+
+-- SCRIPT RUNNER
 local function runScript(url)
     spawn(function()
-        if not HttpService.HttpEnabled then
-            setFeedback("HttpService naka-off! I-enable muna.",5)
-            return
-        end
-        local ok,res = pcall(function()
+        local ok, result = pcall(function()
             return game:HttpGet(url)
         end)
-        if ok then
-            local ok2,fn = pcall(loadstring,res)
-            if ok2 and typeof(fn)=="function" then
-                local ok3,err = pcall(fn)
-                if ok3 then
-                    setFeedback("Script ran successfully!",4)
-                else
-                    setFeedback("Error running script: "..tostring(err),5)
-                end
+        if not ok then
+            setFeedback("Failed to fetch script. Enable HttpService!",6)
+            return
+        end
+        local ok2, fn = pcall(function() return loadstring(result) end)
+        if ok2 and typeof(fn) == "function" then
+            local ok3,res = pcall(fn)
+            if ok3 then
+                setFeedback("Script ran successfully!",4)
             else
-                setFeedback("Loadstring error.",4)
+                setFeedback("Error running script: "..tostring(res),6)
             end
         else
-            setFeedback("Failed to fetch script: "..tostring(res),5)
+            setFeedback("Loadstring error.",6)
         end
     end)
 end
 
--- VERIFY LOGIC
-verifyBtn.MouseButton1Click:Connect(function()
-    local input = tostring(keyBox.Text or "")
-    if input == KEY_NORMAL then
+-- BUTTON LOGIC
+normalBtn.MouseButton1Click:Connect(function()
+    if keyBox.Text == KEY_NORMAL then
         setFeedback("Normal key accepted. Running script...",3)
         runScript(SCRIPT_URL_NORMAL)
-        frame:Destroy()
-    elseif input == KEY_PREMIUM then
-        setFeedback("Premium key accepted. Running premium script...",3)
-        runScript(SCRIPT_URL_PREMIUM)
-        frame:Destroy()
     else
-        setFeedback("Invalid key.",4)
+        setFeedback("Invalid normal key.",4)
     end
 end)
 
--- GET KEY BUTTON
+premiumBtn.MouseButton1Click:Connect(function()
+    if keyBox.Text == KEY_PREMIUM then
+        setFeedback("Premium key accepted. Running script...",3)
+        runScript(SCRIPT_URL_PREMIUM)
+    else
+        setFeedback("Invalid premium key.",4)
+    end
+end)
+
 getKeyBtn.MouseButton1Click:Connect(function()
-    local ok,err = pcall(function()
+    local ok, err = pcall(function()
         if setclipboard then
             setclipboard(DISCORD_INVITE)
             return true
         end
         return false
     end)
-    if ok and err==true then
+    if ok and err == true then
         setFeedback("Discord invite copied!",4)
     else
         keyBox.Text = DISCORD_INVITE
