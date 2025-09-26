@@ -1,8 +1,7 @@
--- Single-Key Panel with Feedback & FadeOut (LocalScript)
+-- Single-Key Panel (LocalScript)
 local Players = game:GetService("Players")
 local player = Players.LocalPlayer
 local PlayerGui = player:WaitForChild("PlayerGui")
-local HttpService = game:GetService("HttpService")
 
 -- CONFIG
 local KEY_NORMAL = "NORMAL-KEY-1234"
@@ -17,7 +16,7 @@ screenGui.Name = "JoshHubKeyUI"
 screenGui.Parent = PlayerGui
 
 local frame = Instance.new("Frame")
-frame.Size = UDim2.new(0, 350, 0, 180)
+frame.Size = UDim2.new(0, 350, 0, 200)
 frame.Position = UDim2.new(0.5,0,0.5,0)
 frame.AnchorPoint = Vector2.new(0.5,0.5)
 frame.BackgroundColor3 = Color3.fromRGB(40,40,50)
@@ -39,7 +38,7 @@ title.Font = Enum.Font.GothamBold
 title.TextSize = 20
 title.TextXAlignment = Enum.TextXAlignment.Left
 
--- GET KEY BUTTON
+-- GET KEY BUTTON sa gilid
 local getKeyBtn = Instance.new("TextButton")
 getKeyBtn.Text = "📋 Get Key"
 getKeyBtn.Size = UDim2.new(0, 120, 0, 28)
@@ -77,40 +76,13 @@ feedback.TextSize = 16
 feedback.TextXAlignment = Enum.TextXAlignment.Left
 feedback.Text = "Ready. Ilagay ang key."
 
-local function setFeedback(txt,color,timeout)
+local function setFeedback(txt, timeout)
     feedback.Text = txt
-    if color then feedback.TextColor3 = color end
     if timeout then
         delay(timeout,function()
-            if feedback then feedback.Text = ""
+            if feedback then feedback.Text = "" end
         end)
     end
-end
-
--- FUNCTION TO FETCH & RUN SCRIPT
-local function runScript(url)
-    spawn(function()
-        if not HttpService.HttpEnabled then
-            setFeedback("HttpService naka-off! I-enable muna.",Color3.fromRGB(255,0,0),5)
-            return
-        end
-        local ok,res = pcall(function()
-            return game:HttpGet(url)
-        end)
-        if ok then
-            local ok2,fn = pcall(loadstring,res)
-            if ok2 and typeof(fn)=="function" then
-                local ok3,err = pcall(fn)
-                if not ok3 then
-                    setFeedback("Error running script: "..tostring(err),Color3.fromRGB(255,0,0),5)
-                end
-            else
-                setFeedback("Loadstring error.",Color3.fromRGB(255,0,0),4)
-            end
-        else
-            setFeedback("Failed to fetch script: "..tostring(res),Color3.fromRGB(255,0,0),5)
-        end
-    end)
 end
 
 -- VERIFY BUTTON
@@ -126,30 +98,48 @@ verifyBtn.Parent = frame
 local vCorner = Instance.new("UICorner", verifyBtn)
 vCorner.CornerRadius = UDim.new(0,8)
 
+-- FUNCTION TO FETCH & RUN SCRIPT
+local HttpService = game:GetService("HttpService")
+local function runScript(url)
+    spawn(function()
+        if not HttpService.HttpEnabled then
+            setFeedback("HttpService naka-off! I-enable muna.",5)
+            return
+        end
+        local ok,res = pcall(function()
+            return game:HttpGet(url)
+        end)
+        if ok then
+            local ok2,fn = pcall(loadstring,res)
+            if ok2 and typeof(fn)=="function" then
+                local ok3,err = pcall(fn)
+                if ok3 then
+                    setFeedback("Script ran successfully!",4)
+                else
+                    setFeedback("Error running script: "..tostring(err),5)
+                end
+            else
+                setFeedback("Loadstring error.",4)
+            end
+        else
+            setFeedback("Failed to fetch script: "..tostring(res),5)
+        end
+    end)
+end
+
 -- VERIFY LOGIC
 verifyBtn.MouseButton1Click:Connect(function()
     local input = tostring(keyBox.Text or "")
     if input == KEY_NORMAL then
-        setFeedback("✅ Normal Key Accepted! Running script...",Color3.fromRGB(0,255,0),5)
+        setFeedback("Normal key accepted. Running script...",3)
         runScript(SCRIPT_URL_NORMAL)
-        task.wait(0.5)
-        -- Fade out UI
-        for i=1,10 do
-            frame.BackgroundTransparency = frame.BackgroundTransparency + 0.05
-            task.wait(0.03)
-        end
         frame:Destroy()
     elseif input == KEY_PREMIUM then
-        setFeedback("💎 Premium Key Accepted! Running premium script...",Color3.fromRGB(0,200,255),5)
+        setFeedback("Premium key accepted. Running premium script...",3)
         runScript(SCRIPT_URL_PREMIUM)
-        task.wait(0.5)
-        for i=1,10 do
-            frame.BackgroundTransparency = frame.BackgroundTransparency + 0.05
-            task.wait(0.03)
-        end
         frame:Destroy()
     else
-        setFeedback("❌ Invalid Key.",Color3.fromRGB(255,0,0),4)
+        setFeedback("Invalid key.",4)
     end
 end)
 
@@ -163,9 +153,9 @@ getKeyBtn.MouseButton1Click:Connect(function()
         return false
     end)
     if ok and err==true then
-        setFeedback("Discord invite copied!",Color3.fromRGB(255,255,0),4)
+        setFeedback("Discord invite copied!",4)
     else
         keyBox.Text = DISCORD_INVITE
-        setFeedback("Discord invite inilagay sa box — Ctrl+C para kopyahin.",Color3.fromRGB(255,255,0),6)
+        setFeedback("Discord invite inilagay sa box — Ctrl+C para kopyahin.",6)
     end
 end)
