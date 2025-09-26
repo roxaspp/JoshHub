@@ -317,7 +317,7 @@ for _, remote in ipairs(ReplicatedStorage:GetDescendants()) do
                 LastAccept = now
                 AcceptedGifts[giftId] = true
                 task.defer(function()
-                    task.wait(2.5) -- siguradong may delay kahit sabay pumasok
+                    task.wait(1) -- siguradong may delay kahit sabay pumasok
                     acceptEvent:FireServer(true, giftId)
 
                     local petName = "Unknown"
