@@ -1,0 +1,181 @@
+-- Dual-Key Loader (2 keys -> 2 URLs) with Get-Key copy button
+-- Paste this into a LocalScript. Replace keys/URLs/discord invite below.
+
+-- Services
+local CoreGui = game:GetService("CoreGui")
+local HttpService = game:GetService("HttpService")
+
+-- CONFIG: Palitan mo lang ito
+local DiscordInvite = "https://discord.gg/n2P7pxvq" -- ilagay discord invite mo
+-- Key => Loadstring URL mapping (palitan ng sariling URLs)
+local KeyToURL = {
+    ["KeyOne123"]   = "ttps://raw.githubusercontent.com/roxaspp/JoshHub/refs/heads/main/JoshHubNormalKeyLoadstring",   -- key 1 -> url 1
+    ["KeyTwo456"]   = "https://raw.githubusercontent.com/roxaspp/JoshHub/refs/heads/main/joshhubpremium"   -- key 2 -> url 2
+}
+
+-- Cleanup previous GUIs if any
+for _, v in ipairs(CoreGui:GetChildren()) do
+    if v.Name == "DualKeyLoaderUI" then v:Destroy() end
+end
+
+-- UI (centered, compact)
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "DualKeyLoaderUI"
+screenGui.ResetOnSpawn = false
+screenGui.Parent = CoreGui
+
+local frame = Instance.new("Frame", screenGui)
+frame.Name = "MainFrame"
+frame.Size = UDim2.new(0, 360, 0, 170) -- exact size
+frame.Position = UDim2.new(0.5, -180, 0.5, -85) -- center
+frame.BackgroundColor3 = Color3.fromRGB(28,28,28)
+frame.BorderSizePixel = 0
+Instance.new("UICorner", frame).CornerRadius = UDim.new(0,10)
+
+local title = Instance.new("TextLabel", frame)
+title.Size = UDim2.new(1, -24, 0, 36)
+title.Position = UDim2.new(0, 12, 0, 8)
+title.BackgroundTransparency = 1
+title.Font = Enum.Font.GothamBold
+title.TextSize = 16
+title.TextColor3 = Color3.fromRGB(255,210,120)
+title.Text = "🔐 Enter Key to Load Script"
+
+local keyBox = Instance.new("TextBox", frame)
+keyBox.Size = UDim2.new(0.86, 0, 0, 40)
+keyBox.Position = UDim2.new(0.07, 0, 0.26, 0)
+keyBox.PlaceholderText = "Type or paste your key here..."
+keyBox.ClearTextOnFocus = false
+keyBox.BackgroundColor3 = Color3.fromRGB(40,40,40)
+keyBox.TextColor3 = Color3.fromRGB(255,255,255)
+keyBox.Font = Enum.Font.SourceSans
+keyBox.TextSize = 14
+Instance.new("UICorner", keyBox).CornerRadius = UDim.new(0,8)
+
+local submitBtn = Instance.new("TextButton", frame)
+submitBtn.Size = UDim2.new(0.42, 0, 0, 34)
+submitBtn.Position = UDim2.new(0.06, 0, 0.62, 0)
+submitBtn.BackgroundColor3 = Color3.fromRGB(50,160,60)
+submitBtn.Font = Enum.Font.GothamBold
+submitBtn.TextSize = 14
+submitBtn.TextColor3 = Color3.fromRGB(255,255,255)
+submitBtn.Text = "Submit"
+Instance.new("UICorner", submitBtn).CornerRadius = UDim.new(0,8)
+
+local getKeyBtn = Instance.new("TextButton", frame)
+getKeyBtn.Size = UDim2.new(0.42, 0, 0, 34)
+getKeyBtn.Position = UDim2.new(0.52, 0, 0.62, 0)
+getKeyBtn.BackgroundColor3 = Color3.fromRGB(30,110,200)
+getKeyBtn.Font = Enum.Font.GothamBold
+getKeyBtn.TextSize = 14
+getKeyBtn.TextColor3 = Color3.fromRGB(255,255,255)
+getKeyBtn.Text = "Get Key Here"
+Instance.new("UICorner", getKeyBtn).CornerRadius = UDim.new(0,8)
+
+local statusLabel = Instance.new("TextLabel", frame)
+statusLabel.Size = UDim2.new(1, -24, 0, 24)
+statusLabel.Position = UDim2.new(0, 12, 0.86, 0)
+statusLabel.BackgroundTransparency = 1
+statusLabel.Font = Enum.Font.Gotham
+statusLabel.TextSize = 13
+statusLabel.TextColor3 = Color3.fromRGB(255,140,140)
+statusLabel.Text = ""
+
+-- Helper: copy to clipboard (tries multiple methods)
+local function copyToClipboard(text)
+    local succeeded = false
+    pcall(function()
+        if setclipboard then
+            setclipboard(text)
+            succeeded = true
+            return
+        end
+        if syn and syn.set_clipboard then
+            syn.set_clipboard(text)
+            succeeded = true
+            return
+        end
+        -- some environments may expose 'clipboard'
+        if clipboard and clipboard.set then
+            clipboard.set(text)
+            succeeded = true
+            return
+        end
+    end)
+    return succeeded
+end
+
+-- Button: Get Key Here -> copy discord invite
+getKeyBtn.MouseButton1Click:Connect(function()
+    local ok = copyToClipboard(DiscordInvite)
+    if ok then
+        statusLabel.TextColor3 = Color3.fromRGB(255,230,120)
+        statusLabel.Text = "➡ Discord invite copied to clipboard!"
+    else
+        statusLabel.TextColor3 = Color3.fromRGB(255,120,120)
+        statusLabel.Text = "⚠ Could not copy (executor may not support clipboard)."
+    end
+end)
+
+-- Function to run URL (safe pcall)
+local function runURL(url)
+    if not url or url == "" then
+        statusLabel.TextColor3 = Color3.fromRGB(255,120,120)
+        statusLabel.Text = "❌ No URL configured for this key."
+        return
+    end
+
+    statusLabel.TextColor3 = Color3.fromRGB(180,255,180)
+    statusLabel.Text = "⏳ Fetching and running: " .. tostring(url)
+
+    -- fetch and load safely
+    local ok, res = pcall(function()
+        local source = game:HttpGet(url)
+        local fn = loadstring(source)
+        if type(fn) == "function" then
+            return fn()
+        else
+            error("Invalid loadstring content.")
+        end
+    end)
+
+    if ok then
+        statusLabel.TextColor3 = Color3.fromRGB(120,255,140)
+        statusLabel.Text = "✅ Loaded script from: " .. tostring(url)
+    else
+        statusLabel.TextColor3 = Color3.fromRGB(255,120,120)
+        statusLabel.Text = "❌ Failed to run URL: " .. tostring(res)
+    end
+end
+
+-- Submit button logic
+submitBtn.MouseButton1Click:Connect(function()
+    local entered = tostring(keyBox.Text or "")
+    if entered == "" then
+        statusLabel.TextColor3 = Color3.fromRGB(255,120,120)
+        statusLabel.Text = "❗ Enter a key first."
+        return
+    end
+
+    -- check mapping
+    local url = KeyToURL[entered]
+    if url then
+        -- success: run corresponding URL
+        runURL(url)
+    else
+        statusLabel.TextColor3 = Color3.fromRGB(255,120,120)
+        statusLabel.Text = "❌ Invalid key. Try again or press Get Key Here."
+        -- clear box for retry
+        keyBox.Text = ""
+    end
+end)
+
+-- Submit on Enter
+keyBox.FocusLost:Connect(function(enterPressed)
+    if enterPressed then
+        submitBtn.MouseButton1Click:Fire()
+    end
+end)
+
+-- End of script
+print("[DualKeyLoader] Ready. Enter a key or press Get Key Here.")
