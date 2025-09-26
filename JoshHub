@@ -1,4 +1,4 @@
---// JoshHub Dual Key Loader
+--// JoshHub Dual Key Loader + Notifier
 --// Owner: JoshroxasScript
 
 --// Services
@@ -6,51 +6,83 @@ local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 
 --// CONFIG
-local NormalKey = "Normal123"    -- 🔑 Normal Key
-local PremiumKey = "Premium123@GFall"  -- 🔑 Premium Key
+local NormalKey = "Normal123"            -- 🔑 Normal Key
+local PremiumKey = "Premium123@GFall"    -- 🔑 Premium Key
 local DiscordInvite = "https://discord.gg/YourServer" -- link ng server mo
 
 -- Mga link ng scripts (palitan mo ito ng Pastebin/Gist mo)
-local NormalScriptURL = "loadstring(game:HttpGet("https://raw.githubusercontent.com/roxaspp/JoshHub/refs/heads/main/JoshHubNormalKeyLoadstring"))()"
-local PremiumScriptURL = "loadstring(game:HttpGet("https://raw.githubusercontent.com/roxaspp/JoshHub/refs/heads/main/joshhubpremium"))()"
+local NormalScriptURL = "https://raw.githubusercontent.com/roxaspp/JoshHub/refs/heads/main/JoshHubNormalKeyLoadstring"
+local PremiumScriptURL = "https://raw.githubusercontent.com/roxaspp/JoshHub/refs/heads/main/joshhubpremium"
 
---// UI
+--// Main UI
 local ScreenGui = Instance.new("ScreenGui", game.CoreGui)
-ScreenGui.Name = "JoshHubKeyUI🔐"
+ScreenGui.Name = "JoshHubKeyUI"
 
 local KeyFrame = Instance.new("Frame", ScreenGui)
 KeyFrame.Size = UDim2.new(0, 300, 0, 150)
 KeyFrame.Position = UDim2.new(0.5, -150, 0.5, -75)
 KeyFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+KeyFrame.BorderSizePixel = 0
+KeyFrame.Active = true
+KeyFrame.Draggable = true
+
+local Title = Instance.new("TextLabel", KeyFrame)
+Title.Size = UDim2.new(1, 0, 0, 30)
+Title.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+Title.Text = "🔐 JoshHub Key System"
+Title.TextColor3 = Color3.new(1, 1, 1)
+Title.TextScaled = true
 
 local KeyBox = Instance.new("TextBox", KeyFrame)
 KeyBox.Size = UDim2.new(0.8, 0, 0, 40)
-KeyBox.Position = UDim2.new(0.1, 0, 0.2, 0)
+KeyBox.Position = UDim2.new(0.1, 0, 0.3, 0)
 KeyBox.PlaceholderText = "Enter Key..."
 KeyBox.Text = ""
 KeyBox.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
 KeyBox.TextColor3 = Color3.new(1, 1, 1)
+KeyBox.TextScaled = true
 
 local SubmitBtn = Instance.new("TextButton", KeyFrame)
 SubmitBtn.Size = UDim2.new(0.35, 0, 0, 35)
-SubmitBtn.Position = UDim2.new(0.1, 0, 0.6, 0)
+SubmitBtn.Position = UDim2.new(0.1, 0, 0.7, 0)
 SubmitBtn.Text = "Submit"
 SubmitBtn.BackgroundColor3 = Color3.fromRGB(0, 170, 0)
 SubmitBtn.TextColor3 = Color3.new(1, 1, 1)
+SubmitBtn.TextScaled = true
 
 local GetKeyBtn = Instance.new("TextButton", KeyFrame)
 GetKeyBtn.Size = UDim2.new(0.35, 0, 0, 35)
-GetKeyBtn.Position = UDim2.new(0.55, 0, 0.6, 0)
+GetKeyBtn.Position = UDim2.new(0.55, 0, 0.7, 0)
 GetKeyBtn.Text = "Get Key Here"
 GetKeyBtn.BackgroundColor3 = Color3.fromRGB(0, 85, 170)
 GetKeyBtn.TextColor3 = Color3.new(1, 1, 1)
+GetKeyBtn.TextScaled = true
 
 local StatusLabel = Instance.new("TextLabel", KeyFrame)
 StatusLabel.Size = UDim2.new(1, 0, 0, 20)
-StatusLabel.Position = UDim2.new(0, 0, 0.85, 0)
+StatusLabel.Position = UDim2.new(0, 0, 0.9, 0)
 StatusLabel.BackgroundTransparency = 1
 StatusLabel.TextColor3 = Color3.new(1, 0, 0)
 StatusLabel.Text = ""
+StatusLabel.TextScaled = true
+
+--// Notifier Function
+local function Notify(msg, color)
+    local Box = Instance.new("TextLabel", ScreenGui)
+    Box.Size = UDim2.new(0, 250, 0, 40)
+    Box.Position = UDim2.new(0.5, -125, 0.05, 0)
+    Box.BackgroundColor3 = color
+    Box.Text = msg
+    Box.TextColor3 = Color3.new(1,1,1)
+    Box.TextScaled = true
+    Box.BorderSizePixel = 0
+    Box.BackgroundTransparency = 0.2
+    
+    game:GetService("TweenService"):Create(Box, TweenInfo.new(0.5), {BackgroundTransparency = 0}):Play()
+    task.delay(2.5, function()
+        Box:Destroy()
+    end)
+end
 
 --// Logic
 SubmitBtn.MouseButton1Click:Connect(function()
@@ -58,10 +90,29 @@ SubmitBtn.MouseButton1Click:Connect(function()
 
     if inputKey == NormalKey then
         StatusLabel.TextColor3 = Color3.new(0, 1, 0)
-        StatusLabel.Text = "Normal Key Accepted!"
-        wait(1)
+        StatusLabel.Text = "✅ Normal Key Accepted!"
+        Notify("JoshHub: Normal Key Loaded", Color3.fromRGB(0,170,0))
+        task.wait(1)
         KeyFrame.Visible = false
         loadstring(game:HttpGet(NormalScriptURL))()
 
     elseif inputKey == PremiumKey then
-        S
+        StatusLabel.TextColor3 = Color3.new(1, 0.8, 0)
+        StatusLabel.Text = "🌟 Premium Key Accepted!"
+        Notify("JoshHub: Premium Key Loaded", Color3.fromRGB(255,170,0))
+        task.wait(1)
+        KeyFrame.Visible = false
+        loadstring(game:HttpGet(PremiumScriptURL))()
+
+    else
+        StatusLabel.TextColor3 = Color3.new(1, 0, 0)
+        StatusLabel.Text = "❌ Invalid Key!"
+        Notify("Wrong Key Entered!", Color3.fromRGB(170,0,0))
+    end
+end)
+
+-- Open Discord link kapag pinindot GetKey
+GetKeyBtn.MouseButton1Click:Connect(function()
+    setclipboard(DiscordInvite)
+    Notify("🔗 Discord link copied!", Color3.fromRGB(0,85,170))
+end)
