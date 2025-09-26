@@ -1,4 +1,4 @@
--- JoshHub Dual-Key Panel (Fixed + Single Key)
+-- JoshHub Dual-Key Panel (Fixed + Working)
 local Players = game:GetService("Players")
 local player = Players.LocalPlayer
 local PlayerGui = player:WaitForChild("PlayerGui")
@@ -17,7 +17,7 @@ screenGui.Name = "JoshHubKeyUI"
 screenGui.Parent = PlayerGui
 
 local frame = Instance.new("Frame")
-frame.Size = UDim2.new(0, 350, 0, 180)
+frame.Size = UDim2.new(0, 360, 0, 180)
 frame.Position = UDim2.new(0.5,0,0.5,0)
 frame.AnchorPoint = Vector2.new(0.5,0.5)
 frame.BackgroundColor3 = Color3.fromRGB(40,40,50)
@@ -97,7 +97,7 @@ getKeyBtn.TextSize = 14
 local gkCorner = Instance.new("UICorner", getKeyBtn)
 gkCorner.CornerRadius = UDim.new(0,10)
 
--- HELPER: Run script
+-- HELPER: Run script safely
 local function runScript(url)
     spawn(function()
         local ok, result = pcall(function()
@@ -125,15 +125,15 @@ end
 submitBtn.MouseButton1Click:Connect(function()
     local input = keyBox.Text or ""
     if input == KEY_NORMAL then
-        setFeedback("Normal key accepted. Running script...",3)
+        setFeedback("Normal key accepted. Running script...",2)
         runScript(SCRIPT_URL_NORMAL)
         screenGui:Destroy()
     elseif input == KEY_PREMIUM then
-        setFeedback("Premium key accepted. Running script...",3)
+        setFeedback("Premium key accepted. Running script...",2)
         runScript(SCRIPT_URL_PREMIUM)
         screenGui:Destroy()
     else
-        setFeedback("Invalid key.",4)
+        setFeedback("Invalid key.",3)
     end
 end)
 
