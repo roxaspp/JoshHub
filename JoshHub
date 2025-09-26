@@ -5,7 +5,7 @@ local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
 
 --// Keys and URLs
 local KeyToURL = {
-    ["NORMAL123"] = "https://your-normal-script-link.com",
+    ["NORMAL123"] = "https://raw.githubusercontent.com/roxaspp/JoshHub/refs/heads/main/JoshHubNorm",
     ["PREMIUM456"] = "https://your-premium-script-link.com"
 }
 
