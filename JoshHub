@@ -1,33 +1,28 @@
--- Dual-Key Panel (LocalScript)
+-- Dual-Key Panel (Fixed Center)
 -- Place this LocalScript under StarterGui (ScreenGui)
--- Features:
--- 1) Single input KeyBox + two buttons: "Use Normal Key" and "Use Premium Key"
--- 2) "Get Key" button that copies your Discord invite to clipboard (tries setclipboard then falls back to showing it)
--- 3) When key is valid, it will fetch and run a loadstring URL (you must supply the URLs)
--- 4) Replace the KEY_* and SCRIPT_URL_* placeholders with your real keys and script URLs
 
 local Players = game:GetService("Players")
 local HttpService = game:GetService("HttpService")
-local StarterGui = game:GetService("StarterGui")
 local player = Players.LocalPlayer
 
 -- CONFIG: set your keys and script URLs here
-local KEY_NORMAL = "NORMAL-KEY-1234"      -- replace with your normal key
-local KEY_PREMIUM = "PREMIUM-KEY-9876"    -- replace with your premium key
-local SCRIPT_URL_NORMAL = "https://raw.githubusercontent.com/roxaspp/JoshHub/refs/heads/main/JoshHubNormalKeyLoadstring"   -- replace with your normal script raw URL
-local SCRIPT_URL_PREMIUM = "https://raw.githubusercontent.com/roxaspp/JoshHub/refs/heads/main/joshhubpremium" -- replace with your premium script raw URL
-local DISCORD_INVITE = "https://discord.gg/n2P7pxvq" -- replace with your Discord invite
+local KEY_NORMAL = "NORMAL-KEY-1234"
+local KEY_PREMIUM = "PREMIUM-KEY-9876"
+local SCRIPT_URL_NORMAL = "https://raw.githubusercontent.com/roxaspp/JoshHub/refs/heads/main/JoshHubNormalKeyLoadstring"
+local SCRIPT_URL_PREMIUM = "https://raw.githubusercontent.com/roxaspp/JoshHub/refs/heads/main/joshhubpremium"
+local DISCORD_INVITE = "https://discord.gg/n2P7pxvq"
 
--- UI creation (if you already have a ScreenGui, you can skip creating and instead wire these up)
+-- CREATE SCREEN GUI
 local screenGui = Instance.new("ScreenGui")
 screenGui.Name = "JoshPanelKey🔐"
 screenGui.ResetOnSpawn = false
 screenGui.Parent = player:WaitForChild("PlayerGui")
 
+-- FRAME (fixed sa gitna)
 local frame = Instance.new("Frame")
-frame.Size = UDim2.new(0, 325, 0, 150)
-frame.Position = UDim2.new(0.5, -192, 0.5, -100)
-frame.AnchorPoint = Vector2.new(0.5, 0.5)
+frame.Size = UDim2.new(0, 325, 0, 180)
+frame.Position = UDim2.new(0.5, 0, 0.5, 0)
+frame.AnchorPoint = Vector2.new(0.5, 0.5) -- fixed center
 frame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
 frame.BorderSizePixel = 0
 frame.Parent = screenGui
@@ -35,6 +30,7 @@ frame.Parent = screenGui
 local uiCorner = Instance.new("UICorner", frame)
 uiCorner.CornerRadius = UDim.new(0, 10)
 
+-- TITLE
 local title = Instance.new("TextLabel")
 title.Text = "Dual Key Panel"
 title.Size = UDim2.new(1, -20, 0, 36)
@@ -45,6 +41,7 @@ title.Font = Enum.Font.SourceSansBold
 title.TextSize = 20
 title.Parent = frame
 
+-- KEYBOX
 local keyBox = Instance.new("TextBox")
 keyBox.PlaceholderText = "Ilagay ang key dito"
 keyBox.Size = UDim2.new(1, -20, 0, 36)
@@ -58,6 +55,7 @@ keyBox.Parent = frame
 local keyCorner = Instance.new("UICorner", keyBox)
 keyCorner.CornerRadius = UDim.new(0,6)
 
+-- BUTTON CREATION
 local function makeButton(text, posY)
     local b = Instance.new("TextButton")
     b.Text = text
@@ -75,6 +73,8 @@ end
 
 local normalBtn = makeButton("Use Normal Key", 100)
 local premiumBtn = makeButton("Use Premium Key", 140)
+
+-- GET KEY BUTTON
 local getKeyBtn = Instance.new("TextButton")
 getKeyBtn.Text = "Get Key / Copy Discord"
 getKeyBtn.Size = UDim2.new(0, 160, 0, 30)
@@ -88,7 +88,7 @@ getKeyBtn.Parent = frame
 local gkCorner = Instance.new("UICorner", getKeyBtn)
 gkCorner.CornerRadius = UDim.new(0,6)
 
--- Feedback label
+-- FEEDBACK LABEL
 local feedback = Instance.new("TextLabel")
 feedback.Text = ""
 feedback.Size = UDim2.new(1, -20, 0, 20)
@@ -109,7 +109,7 @@ local function setFeedback(txt, timeout)
     end
 end
 
--- Helper: try to fetch and run a remote script
+-- HELPER: fetch and execute script
 local function fetchAndExecute(url)
     if url == "" or not url then
         setFeedback("Script URL hindi naka-set.", 4)
@@ -120,14 +120,11 @@ local function fetchAndExecute(url)
         return
     end
     spawn(function()
-        local ok, result = pcall(function()
-            return game:HttpGet(url)
-        end)
+        local ok, result = pcall(function() return game:HttpGet(url) end)
         if not ok then
-            setFeedback("Failed to download script: " .. tostring(result), 6)
+            setFeedback("Failed to download script: "..tostring(result), 6)
             return
         end
-        -- attempt to loadstring and run
         local ok2, fn = pcall(function() return loadstring(result) end)
         if not ok2 or typeof(fn) ~= "function" then
             setFeedback("Loadstring error o wala function.", 6)
@@ -135,14 +132,14 @@ local function fetchAndExecute(url)
         end
         local ok3, res3 = pcall(fn)
         if not ok3 then
-            setFeedback("Error habang pinapatakbo ang script: " .. tostring(res3), 6)
+            setFeedback("Error habang pinapatakbo ang script: "..tostring(res3), 6)
             return
         end
         setFeedback("Script na-run nang successful!", 4)
     end)
 end
 
--- Button actions
+-- BUTTON ACTIONS
 normalBtn.MouseButton1Click:Connect(function()
     local input = tostring(keyBox.Text or "")
     if input == KEY_NORMAL then
@@ -164,7 +161,6 @@ premiumBtn.MouseButton1Click:Connect(function()
 end)
 
 getKeyBtn.MouseButton1Click:Connect(function()
-    -- Try to copy to clipboard if setclipboard is available (exploit envs)
     local ok, err = pcall(function()
         if setclipboard then
             setclipboard(DISCORD_INVITE)
@@ -175,26 +171,10 @@ getKeyBtn.MouseButton1Click:Connect(function()
     if ok and err == true then
         setFeedback("Discord invite copied to clipboard!", 4)
     else
-        -- fallback: put invite into keyBox and select for manual copy
         keyBox.Text = DISCORD_INVITE
         setFeedback("Discord invite inilagay sa box — i-Ctrl+C para kopyahin.", 6)
     end
 end)
 
--- Optional: close/minimize with a small button
-local mini = Instance.new("TextButton")
-mini.Text = "_"
-mini.Size = UDim2.new(0, 28, 0, 24)
-mini.Position = UDim2.new(1, -36, 0, 8)
-mini.AnchorPoint = Vector2.new(1, 0)
-mini.BackgroundTransparency = 1
-mini.TextColor3 = Color3.fromRGB(200,200,200)
-mini.Font = Enum.Font.SourceSansBold
-mini.TextSize = 20
-mini.Parent = frame
-mini.MouseButton1Click:Connect(function()
-    frame.Visible = not frame.Visible
-end)
-
--- Done
+-- INITIAL FEEDBACK
 setFeedback("Ready. Ilagay ang key at piliin Normal o Premium.", 6)
