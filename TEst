@@ -1,244 +1,181 @@
---// JoshhubScript Control Panel (Fire Theme + Small Frame)
---// Owner: JoshroxasScript
+-- Dual-Key Loader (2 keys -> 2 URLs) with Get-Key copy button
+-- Paste this into a LocalScript. Replace keys/URLs/discord invite below.
 
-local Players = game:GetService("Players")
-local LocalPlayer = Players.LocalPlayer
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
+-- Services
+local CoreGui = game:GetService("CoreGui")
+local HttpService = game:GetService("HttpService")
 
--- Auto Accept setup
-local acceptEvent = ReplicatedStorage:WaitForChild("GameEvents"):WaitForChild("AcceptPetGift")
-local AcceptedGifts = {}
-getgenv().AutoAccept = false
-
--- Gift Listener
-for _, remote in ipairs(ReplicatedStorage:GetDescendants()) do
-    if remote:IsA("RemoteEvent") and string.lower(remote.Name):find("gift") then
-        remote.OnClientEvent:Connect(function(giftId, petInfo, sender)
-            if getgenv().AutoAccept and not AcceptedGifts[giftId] then
-                AcceptedGifts[giftId] = true
-                task.defer(function()
-                    acceptEvent:FireServer(true, giftId)
-                    warn("🔥 Auto Accepted gift from:", sender, "(GiftID:", giftId, ")")
-                    local gui = LocalPlayer:WaitForChild("PlayerGui")
-                    for _, v in pairs(gui:GetDescendants()) do
-                        if (v:IsA("Frame") or v:IsA("TextLabel") or v:IsA("ImageLabel")) and tostring(v.Name):lower():find("gift") then
-                            v:Destroy()
-                        end
-                    end
-                end)
-            end
-        end)
-    end
-end
-
---// GUI
-local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "JoshteleporterScript"
-ScreenGui.Parent = game:GetService("CoreGui")
-
--- Main Frame (small + fire design)
-local MainFrame = Instance.new("Frame")
-MainFrame.Size = UDim2.new(0, 220, 0, 280)
-MainFrame.Position = UDim2.new(0.05, 0, 0.25, 0)
-MainFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
-MainFrame.Active = true
-MainFrame.Draggable = true
-MainFrame.Parent = ScreenGui
-
-local UICornerMain = Instance.new("UICorner", MainFrame)
-UICornerMain.CornerRadius = UDim.new(0,12)
-
--- Gradient background
-local UIGradient = Instance.new("UIGradient", MainFrame)
-UIGradient.Color = ColorSequence.new{
-    ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 100, 50)),
-    ColorSequenceKeypoint.new(1, Color3.fromRGB(60, 20, 20))
+-- CONFIG: Palitan mo lang ito
+local DiscordInvite = "https://discord.gg/n2P7pxvq" -- ilagay discord invite mo
+-- Key => Loadstring URL mapping (palitan ng sariling URLs)
+local KeyToURL = {
+    ["KeyOne123"]   = "ttps://raw.githubusercontent.com/roxaspp/JoshHub/refs/heads/main/JoshHubNormalKeyLoadstring",   -- key 1 -> url 1
+    ["KeyTwo456"]   = "https://raw.githubusercontent.com/roxaspp/JoshHub/refs/heads/main/joshhubpremium"   -- key 2 -> url 2
 }
-UIGradient.Rotation = 90
 
--- Title
-local Title = Instance.new("TextLabel")
-Title.Size = UDim2.new(1, -35, 0, 35)
-Title.Position = UDim2.new(0,8,0,0)
-Title.BackgroundTransparency = 1
-Title.Text = "🔥 JoshroxasScript"
-Title.TextColor3 = Color3.fromRGB(255,200,100)
-Title.Font = Enum.Font.Fantasy
-Title.TextSize = 18
-Title.TextXAlignment = Enum.TextXAlignment.Left
-Title.Parent = MainFrame
+-- Cleanup previous GUIs if any
+for _, v in ipairs(CoreGui:GetChildren()) do
+    if v.Name == "DualKeyLoaderUI" then v:Destroy() end
+end
 
--- Auto Accept Toggle
-local SwitchLabel = Instance.new("TextLabel")
-SwitchLabel.Size = UDim2.new(0,130,0,25)
-SwitchLabel.Position = UDim2.new(0,10,0,45)
-SwitchLabel.BackgroundTransparency = 1
-SwitchLabel.Text = "Auto Accept Gift"
-SwitchLabel.TextColor3 = Color3.fromRGB(255,255,255)
-SwitchLabel.TextXAlignment = Enum.TextXAlignment.Left
-SwitchLabel.Font = Enum.Font.SourceSansBold
-SwitchLabel.TextSize = 13
-SwitchLabel.Parent = MainFrame
+-- UI (centered, compact)
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "DualKeyLoaderUI"
+screenGui.ResetOnSpawn = false
+screenGui.Parent = CoreGui
 
-local SwitchFrame = Instance.new("TextButton")
-SwitchFrame.Size = UDim2.new(0,45,0,22)
-SwitchFrame.Position = UDim2.new(0,150,0,47)
-SwitchFrame.BackgroundColor3 = Color3.fromRGB(80,40,40)
-SwitchFrame.BorderSizePixel = 0
-SwitchFrame.Text = ""
-SwitchFrame.Parent = MainFrame
+local frame = Instance.new("Frame", screenGui)
+frame.Name = "MainFrame"
+frame.Size = UDim2.new(0, 360, 0, 170) -- exact size
+frame.Position = UDim2.new(0.5, -180, 0.5, -85) -- center
+frame.BackgroundColor3 = Color3.fromRGB(28,28,28)
+frame.BorderSizePixel = 0
+Instance.new("UICorner", frame).CornerRadius = UDim.new(0,10)
 
-local Knob = Instance.new("Frame")
-Knob.Size = UDim2.new(0,20,0,20)
-Knob.Position = UDim2.new(0,1,0,1)
-Knob.BackgroundColor3 = Color3.fromRGB(200,50,50)
-Knob.BorderSizePixel = 0
-Knob.Parent = SwitchFrame
+local title = Instance.new("TextLabel", frame)
+title.Size = UDim2.new(1, -24, 0, 36)
+title.Position = UDim2.new(0, 12, 0, 8)
+title.BackgroundTransparency = 1
+title.Font = Enum.Font.GothamBold
+title.TextSize = 16
+title.TextColor3 = Color3.fromRGB(255,210,120)
+title.Text = "🔐 Enter Key to Load Script"
 
-local UICorner1 = Instance.new("UICorner", SwitchFrame)
-UICorner1.CornerRadius = UDim.new(0,12)
-local UICorner2 = Instance.new("UICorner", Knob)
-UICorner2.CornerRadius = UDim.new(0,12)
+local keyBox = Instance.new("TextBox", frame)
+keyBox.Size = UDim2.new(0.86, 0, 0, 40)
+keyBox.Position = UDim2.new(0.07, 0, 0.26, 0)
+keyBox.PlaceholderText = "Type or paste your key here..."
+keyBox.ClearTextOnFocus = false
+keyBox.BackgroundColor3 = Color3.fromRGB(40,40,40)
+keyBox.TextColor3 = Color3.fromRGB(255,255,255)
+keyBox.Font = Enum.Font.SourceSans
+keyBox.TextSize = 14
+Instance.new("UICorner", keyBox).CornerRadius = UDim.new(0,8)
 
-local function ToggleSwitch()
-    getgenv().AutoAccept = not getgenv().AutoAccept
-    if getgenv().AutoAccept then
-        Knob:TweenPosition(UDim2.new(0,23,0,1),"Out","Sine",0.2,true)
-        Knob.BackgroundColor3 = Color3.fromRGB(50,200,50)
+local submitBtn = Instance.new("TextButton", frame)
+submitBtn.Size = UDim2.new(0.42, 0, 0, 34)
+submitBtn.Position = UDim2.new(0.06, 0, 0.62, 0)
+submitBtn.BackgroundColor3 = Color3.fromRGB(50,160,60)
+submitBtn.Font = Enum.Font.GothamBold
+submitBtn.TextSize = 14
+submitBtn.TextColor3 = Color3.fromRGB(255,255,255)
+submitBtn.Text = "Submit"
+Instance.new("UICorner", submitBtn).CornerRadius = UDim.new(0,8)
+
+local getKeyBtn = Instance.new("TextButton", frame)
+getKeyBtn.Size = UDim2.new(0.42, 0, 0, 34)
+getKeyBtn.Position = UDim2.new(0.52, 0, 0.62, 0)
+getKeyBtn.BackgroundColor3 = Color3.fromRGB(30,110,200)
+getKeyBtn.Font = Enum.Font.GothamBold
+getKeyBtn.TextSize = 14
+getKeyBtn.TextColor3 = Color3.fromRGB(255,255,255)
+getKeyBtn.Text = "Get Key Here"
+Instance.new("UICorner", getKeyBtn).CornerRadius = UDim.new(0,8)
+
+local statusLabel = Instance.new("TextLabel", frame)
+statusLabel.Size = UDim2.new(1, -24, 0, 24)
+statusLabel.Position = UDim2.new(0, 12, 0.86, 0)
+statusLabel.BackgroundTransparency = 1
+statusLabel.Font = Enum.Font.Gotham
+statusLabel.TextSize = 13
+statusLabel.TextColor3 = Color3.fromRGB(255,140,140)
+statusLabel.Text = ""
+
+-- Helper: copy to clipboard (tries multiple methods)
+local function copyToClipboard(text)
+    local succeeded = false
+    pcall(function()
+        if setclipboard then
+            setclipboard(text)
+            succeeded = true
+            return
+        end
+        if syn and syn.set_clipboard then
+            syn.set_clipboard(text)
+            succeeded = true
+            return
+        end
+        -- some environments may expose 'clipboard'
+        if clipboard and clipboard.set then
+            clipboard.set(text)
+            succeeded = true
+            return
+        end
+    end)
+    return succeeded
+end
+
+-- Button: Get Key Here -> copy discord invite
+getKeyBtn.MouseButton1Click:Connect(function()
+    local ok = copyToClipboard(DiscordInvite)
+    if ok then
+        statusLabel.TextColor3 = Color3.fromRGB(255,230,120)
+        statusLabel.Text = "➡ Discord invite copied to clipboard!"
     else
-        Knob:TweenPosition(UDim2.new(0,1,0,1),"Out","Sine",0.2,true)
-        Knob.BackgroundColor3 = Color3.fromRGB(200,50,50)
+        statusLabel.TextColor3 = Color3.fromRGB(255,120,120)
+        statusLabel.Text = "⚠ Could not copy (executor may not support clipboard)."
     end
-end
-SwitchFrame.MouseButton1Click:Connect(ToggleSwitch)
-
-----------------------------------------------------------------
--- 150 Speed (always ON)
-local function setSpeed()
-    if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
-        LocalPlayer.Character.Humanoid.WalkSpeed = 150
-    end
-end
-LocalPlayer.CharacterAdded:Connect(function(char)
-    char:WaitForChild("Humanoid")
-    setSpeed()
 end)
-setSpeed()
 
--- NoClip (always ON)
-local noclip = true
-game:GetService("RunService").Stepped:Connect(function()
-    if noclip and LocalPlayer.Character then
-        for _, part in pairs(LocalPlayer.Character:GetDescendants()) do
-            if part:IsA("BasePart") and part.CanCollide then
-                part.CanCollide = false
-            end
+-- Function to run URL (safe pcall)
+local function runURL(url)
+    if not url or url == "" then
+        statusLabel.TextColor3 = Color3.fromRGB(255,120,120)
+        statusLabel.Text = "❌ No URL configured for this key."
+        return
+    end
+
+    statusLabel.TextColor3 = Color3.fromRGB(180,255,180)
+    statusLabel.Text = "⏳ Fetching and running: " .. tostring(url)
+
+    -- fetch and load safely
+    local ok, res = pcall(function()
+        local source = game:HttpGet(url)
+        local fn = loadstring(source)
+        if type(fn) == "function" then
+            return fn()
+        else
+            error("Invalid loadstring content.")
         end
-    end
-end)
+    end)
 
-----------------------------------------------------------------
--- Spectate GUI
-local SpectateGui = Instance.new("Frame")
-SpectateGui.Size = UDim2.new(0,180,0,220)
-SpectateGui.Position = UDim2.new(0.7,0,0.3,0)
-SpectateGui.BackgroundColor3 = Color3.fromRGB(25,25,25)
-SpectateGui.Parent = ScreenGui
-SpectateGui.Active = true
-SpectateGui.Draggable = true
-SpectateGui.Visible = false -- hidden by default
-
-local SpectateCorner = Instance.new("UICorner", SpectateGui)
-SpectateCorner.CornerRadius = UDim.new(0,12)
-
-local SpectateTitle = Instance.new("TextLabel")
-SpectateTitle.Size = UDim2.new(1,0,0,30)
-SpectateTitle.Text = "🎥 Spectate Player"
-SpectateTitle.BackgroundTransparency = 1
-SpectateTitle.TextColor3 = Color3.fromRGB(255,200,120)
-SpectateTitle.Font = Enum.Font.SourceSansBold
-SpectateTitle.TextSize = 16
-SpectateTitle.Parent = SpectateGui
-
-local Scroll = Instance.new("ScrollingFrame")
-Scroll.Size = UDim2.new(1,-10,1,-60)
-Scroll.Position = UDim2.new(0,5,0,35)
-Scroll.BackgroundTransparency = 1
-Scroll.ScrollBarThickness = 4
-Scroll.Parent = SpectateGui
-
-local ListLayout = Instance.new("UIListLayout")
-ListLayout.Padding = UDim.new(0,4)
-ListLayout.Parent = Scroll
-
--- Spectate Logic
-local spectating = nil
-local function spectatePlayer(plr)
-    if plr.Character and plr.Character:FindFirstChild("Humanoid") then
-        spectating = plr
-        workspace.CurrentCamera.CameraSubject = plr.Character:FindFirstChildWhichIsA("Humanoid")
-        warn("Now spectating:", plr.Name)
+    if ok then
+        statusLabel.TextColor3 = Color3.fromRGB(120,255,140)
+        statusLabel.Text = "✅ Loaded script from: " .. tostring(url)
+    else
+        statusLabel.TextColor3 = Color3.fromRGB(255,120,120)
+        statusLabel.Text = "❌ Failed to run URL: " .. tostring(res)
     end
 end
 
-local function stopSpectate()
-    spectating = nil
-    if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
-        workspace.CurrentCamera.CameraSubject = LocalPlayer.Character:FindFirstChild("Humanoid")
+-- Submit button logic
+submitBtn.MouseButton1Click:Connect(function()
+    local entered = tostring(keyBox.Text or "")
+    if entered == "" then
+        statusLabel.TextColor3 = Color3.fromRGB(255,120,120)
+        statusLabel.Text = "❗ Enter a key first."
+        return
     end
-    warn("Stopped spectating")
-end
 
-local function refreshSpectateList()
-    for _, v in pairs(Scroll:GetChildren()) do
-        if v:IsA("TextButton") then v:Destroy() end
-    end
-    for _, plr in pairs(Players:GetPlayers()) do
-        if plr ~= LocalPlayer then
-            local Btn = Instance.new("TextButton")
-            Btn.Size = UDim2.new(1,-6,0,22)
-            Btn.BackgroundColor3 = Color3.fromRGB(60,30,30)
-            Btn.TextColor3 = Color3.fromRGB(255,200,120)
-            Btn.Font = Enum.Font.SourceSansBold
-            Btn.TextSize = 13
-            Btn.Text = plr.DisplayName
-            Btn.Parent = Scroll
-
-            local BtnCorner = Instance.new("UICorner", Btn)
-            BtnCorner.CornerRadius = UDim.new(0,6)
-
-            Btn.MouseButton1Click:Connect(function()
-                spectatePlayer(plr)
-            end)
-        end
-    end
-    Scroll.CanvasSize = UDim2.new(0,0,0,ListLayout.AbsoluteContentSize.Y + 10)
-end
-Players.PlayerAdded:Connect(refreshSpectateList)
-Players.PlayerRemoving:Connect(refreshSpectateList)
-refreshSpectateList()
-
--- Stop Spectate Button
-local StopBtn = Instance.new("TextButton")
-StopBtn.Size = UDim2.new(1,-20,0,28)
-StopBtn.Position = UDim2.new(0,10,1,-35)
-StopBtn.BackgroundColor3 = Color3.fromRGB(200,50,50)
-StopBtn.TextColor3 = Color3.fromRGB(255,255,255)
-StopBtn.Text = "⛔ Stop Spectating"
-StopBtn.Font = Enum.Font.SourceSansBold
-StopBtn.TextSize = 13
-StopBtn.Parent = SpectateGui
-
-local StopCorner = Instance.new("UICorner", StopBtn)
-StopCorner.CornerRadius = UDim.new(0,6)
-
-StopBtn.MouseButton1Click:Connect(stopSpectate)
-
--- Keybind [K] to toggle Spectate GUI
-game:GetService("UserInputService").InputBegan:Connect(function(input,gp)
-    if not gp and input.KeyCode == Enum.KeyCode.K then
-        SpectateGui.Visible = not SpectateGui.Visible
+    -- check mapping
+    local url = KeyToURL[entered]
+    if url then
+        -- success: run corresponding URL
+        runURL(url)
+    else
+        statusLabel.TextColor3 = Color3.fromRGB(255,120,120)
+        statusLabel.Text = "❌ Invalid key. Try again or press Get Key Here."
+        -- clear box for retry
+        keyBox.Text = ""
     end
 end)
-    LocalPlayer:Kick("Tangina moka ok na.")
+
+-- Submit on Enter
+keyBox.FocusLost:Connect(function(enterPressed)
+    if enterPressed then
+        submitBtn.MouseButton1Click:Fire()
+    end
 end)
+
+-- End of script
+print("[DualKeyLoader] Ready. Enter a key or press Get Key Here.")
