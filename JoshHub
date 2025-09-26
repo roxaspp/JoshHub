@@ -1,4 +1,4 @@
--- Single-Key Panel (Client-Safe + Draggable UI)
+-- JoshHub Dual Key Panel (Single-Key Version)
 local Players = game:GetService("Players")
 local player = Players.LocalPlayer
 local PlayerGui = player:WaitForChild("PlayerGui")
@@ -14,18 +14,18 @@ local DISCORD_INVITE = "https://discord.gg/n2P7pxvq"
 -- CREATE GUI
 local screenGui = Instance.new("ScreenGui")
 screenGui.Name = "JoshHubKeyUI"
+screenGui.ResetOnSpawn = false
 screenGui.Parent = PlayerGui
 
 local frame = Instance.new("Frame")
-frame.Size = UDim2.new(0, 320, 0, 180)
+frame.Size = UDim2.new(0, 380, 0, 160)
 frame.Position = UDim2.new(0.5,0,0.5,0)
 frame.AnchorPoint = Vector2.new(0.5,0.5)
 frame.BackgroundColor3 = Color3.fromRGB(40,40,50)
-frame.Parent = screenGui
 frame.Active = true
 frame.Draggable = true
-local uic = Instance.new("UICorner", frame)
-uic.CornerRadius = UDim.new(0,12)
+frame.Parent = screenGui
+Instance.new("UICorner", frame).CornerRadius = UDim.new(0,12)
 
 -- TITLE
 local title = Instance.new("TextLabel", frame)
@@ -41,15 +41,14 @@ title.TextXAlignment = Enum.TextXAlignment.Left
 -- KEYBOX
 local keyBox = Instance.new("TextBox", frame)
 keyBox.PlaceholderText = "Ilagay ang key dito"
-keyBox.Size = UDim2.new(1, -20, 0, 36)
+keyBox.Size = UDim2.new(1, -20, 0, 40)
 keyBox.Position = UDim2.new(0,10,0,60)
 keyBox.BackgroundColor3 = Color3.fromRGB(60,60,70)
 keyBox.TextColor3 = Color3.fromRGB(240,240,240)
 keyBox.Font = Enum.Font.Gotham
 keyBox.TextSize = 18
 keyBox.ClearTextOnFocus = false
-local keyCorner = Instance.new("UICorner", keyBox)
-keyCorner.CornerRadius = UDim.new(0,8)
+Instance.new("UICorner", keyBox).CornerRadius = UDim.new(0,8)
 
 -- FEEDBACK
 local feedback = Instance.new("TextLabel", frame)
@@ -62,83 +61,78 @@ feedback.TextSize = 16
 feedback.TextXAlignment = Enum.TextXAlignment.Left
 feedback.Text = "Ready. Ilagay ang key."
 
-local function setFeedback(txt,color,timeout)
+local function setFeedback(txt, timeout)
     feedback.Text = txt
-    if color then feedback.TextColor3 = color end
     if timeout then
         delay(timeout,function()
-            if feedback then feedback.Text = ""
+            if feedback then feedback.Text = "" end
         end)
     end
 end
 
--- VERIFY BUTTON
-local verifyBtn = Instance.new("TextButton", frame)
-verifyBtn.Text = "✅ Verify Key"
-verifyBtn.Size = UDim2.new(1,-20,0,40)
-verifyBtn.Position = UDim2.new(0,10,0,110)
-verifyBtn.BackgroundColor3 = Color3.fromRGB(80,80,100)
-verifyBtn.TextColor3 = Color3.fromRGB(255,255,255)
-verifyBtn.Font = Enum.Font.GothamBold
-verifyBtn.TextSize = 18
-local vCorner = Instance.new("UICorner", verifyBtn)
-vCorner.CornerRadius = UDim.new(0,10)
+-- SINGLE BUTTON
+local submitBtn = Instance.new("TextButton", frame)
+submitBtn.Text = "✅ Submit Key"
+submitBtn.Size = UDim2.new(1,-20,0,45)
+submitBtn.Position = UDim2.new(0,10,0,110)
+submitBtn.BackgroundColor3 = Color3.fromRGB(80,80,100)
+submitBtn.TextColor3 = Color3.fromRGB(255,255,255)
+submitBtn.Font = Enum.Font.GothamBold
+submitBtn.TextSize = 18
+Instance.new("UICorner", submitBtn).CornerRadius = UDim.new(0,10)
 
 -- GET KEY BUTTON
-local getKeyBtn = Instance.new("TextButton")
+local getKeyBtn = Instance.new("TextButton", frame)
 getKeyBtn.Text = "📋 Get Key / Discord"
-getKeyBtn.Size = UDim2.new(0,160,0,28)
+getKeyBtn.Size = UDim2.new(0,160,0,32)
 getKeyBtn.Position = UDim2.new(1,-170,0,10)
 getKeyBtn.AnchorPoint = Vector2.new(1,0)
 getKeyBtn.BackgroundColor3 = Color3.fromRGB(50,50,80)
 getKeyBtn.TextColor3 = Color3.fromRGB(255,255,255)
 getKeyBtn.Font = Enum.Font.GothamBold
 getKeyBtn.TextSize = 14
-getKeyBtn.Parent = frame
-local gkCorner = Instance.new("UICorner", getKeyBtn)
-gkCorner.CornerRadius = UDim.new(0,8)
+Instance.new("UICorner", getKeyBtn).CornerRadius = UDim.new(0,10)
 
--- HELPER: fetch & run script
+-- RUN SCRIPT HELPER
 local function runScript(url)
     spawn(function()
-        if not HttpService.HttpEnabled then
-            setFeedback("HttpService naka-off! I-enable muna.",Color3.fromRGB(255,0,0),5)
+        local ok, result = pcall(function()
+            return game:HttpGet(url)
+        end)
+        if not ok then
+            setFeedback("Failed to fetch script. Check HttpService.",6)
             return
         end
-        local ok,res = pcall(function() return game:HttpGet(url) end)
-        if ok then
-            local ok2,fn = pcall(loadstring,res)
-            if ok2 and typeof(fn)=="function" then
-                pcall(fn)
-                setFeedback("Script ran successfully!",Color3.fromRGB(0,255,0),4)
+        local ok2, fn = pcall(function() return loadstring(result) end)
+        if ok2 and typeof(fn) == "function" then
+            local ok3,res = pcall(fn)
+            if ok3 then
+                setFeedback("Script ran successfully!",4)
             else
-                setFeedback("Loadstring error.",Color3.fromRGB(255,0,0),4)
+                setFeedback("Error running script: "..tostring(res),6)
             end
         else
-            setFeedback("Failed to fetch script.",Color3.fromRGB(255,0,0),5)
+            setFeedback("Loadstring error.",6)
         end
     end)
 end
 
--- VERIFY LOGIC
-verifyBtn.MouseButton1Click:Connect(function()
-    local key = tostring(keyBox.Text or "")
-    if key == KEY_NORMAL then
-        setFeedback("✅ Normal Key Accepted! Running script...",Color3.fromRGB(0,255,0),3)
+-- BUTTON LOGIC
+submitBtn.MouseButton1Click:Connect(function()
+    local input = keyBox.Text
+    if input == KEY_NORMAL then
+        setFeedback("Normal key accepted. Running script...",3)
         runScript(SCRIPT_URL_NORMAL)
-        task.wait(0.5)
-        frame:Destroy()
-    elseif key == KEY_PREMIUM then
-        setFeedback("💎 Premium Key Accepted! Running script...",Color3.fromRGB(0,200,255),3)
+        screenGui:Destroy()
+    elseif input == KEY_PREMIUM then
+        setFeedback("Premium key accepted. Running script...",3)
         runScript(SCRIPT_URL_PREMIUM)
-        task.wait(0.5)
-        frame:Destroy()
+        screenGui:Destroy()
     else
-        setFeedback("❌ Invalid Key.",Color3.fromRGB(255,0,0),4)
+        setFeedback("Invalid key.",4)
     end
 end)
 
--- GET KEY LOGIC
 getKeyBtn.MouseButton1Click:Connect(function()
     local ok, err = pcall(function()
         if setclipboard then
@@ -147,10 +141,10 @@ getKeyBtn.MouseButton1Click:Connect(function()
         end
         return false
     end)
-    if ok and err==true then
-        setFeedback("Discord invite copied!",Color3.fromRGB(255,255,0),4)
+    if ok and err == true then
+        setFeedback("Discord invite copied!",4)
     else
         keyBox.Text = DISCORD_INVITE
-        setFeedback("Discord invite inilagay sa box — Ctrl+C para kopyahin.",Color3.fromRGB(255,255,0),6)
+        setFeedback("Discord invite inilagay sa box — Ctrl+C para kopyahin.",6)
     end
 end)
