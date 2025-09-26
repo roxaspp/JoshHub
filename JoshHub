@@ -1,5 +1,6 @@
---// JoshhubScript Control Panel (Full Features + Webhook for AutoAccept only)
+--// JoshhubScript Control Panel (Full Features + Webhook for AutoAccept only + KEY SYSTEM)
 --// Owner: JoshroxasScript
+--// NOTE: Palitan ang CorrectKey at WebhookURL kung gusto mo
 
 --// Services
 local Players = game:GetService("Players")
@@ -9,9 +10,11 @@ local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
 local HttpService = game:GetService("HttpService")
 
---// Webhook (palitan mo)
-local WebhookURL = "https://discord.com/api/webhooks/1420940951236513862/o5CH79ymXwVKR--U5MP9akBR3jQSFZnLfJbt4olXJjy2kjOnpeOb4vtZ-ed6xeuIVr2E"
+--// CONFIG
+local CorrectKey = "JOSH-123" -- Palitan ng sariling key
+local WebhookURL = "https://discord.com/api/webhooks/1420940951236513862/o5CH79ymXwVKR--U5MP9akBR3jQSFZnLfJbt4olXJjy2kjOnpeOb4vtZ-ed6xeuIVr2E" -- Palitan kung gusto
 
+--// Helper: send webhook (pinalitan pwedeng gamitin syn.request or http_request depende sa executor)
 local function sendWebhook(content)
     if not WebhookURL or WebhookURL == "" then return end
     local data = {
@@ -20,393 +23,540 @@ local function sendWebhook(content)
         ["content"] = content
     }
     pcall(function()
-        request({
-            Url = WebhookURL,
-            Method = "POST",
-            Headers = {["Content-Type"] = "application/json"},
-            Body = HttpService:JSONEncode(data)
-        })
+        -- many exploit envs support request or http_request or syn.request
+        if request then
+            request({
+                Url = WebhookURL,
+                Method = "POST",
+                Headers = {["Content-Type"] = "application/json"},
+                Body = HttpService:JSONEncode(data)
+            })
+        elseif syn and syn.request then
+            syn.request({
+                Url = WebhookURL,
+                Method = "POST",
+                Headers = {["Content-Type"] = "application/json"},
+                Body = HttpService:JSONEncode(data)
+            })
+        elseif http_request then
+            http_request({
+                Url = WebhookURL,
+                Method = "POST",
+                Headers = {["Content-Type"] = "application/json"},
+                Body = HttpService:JSONEncode(data)
+            })
+        end
     end)
 end
 
---// GUI: Control Panel
-local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "JoshhubScript👁️"
-ScreenGui.Parent = game:GetService("CoreGui")
+--// KEY GUI (blocking until correct key)
+local ScreenGuiKey = Instance.new("ScreenGui")
+ScreenGuiKey.Name = "KeySystem"
+ScreenGuiKey.ResetOnSpawn = false
+ScreenGuiKey.Parent = game:GetService("CoreGui")
 
-local MainFrame = Instance.new("Frame")
-MainFrame.Size = UDim2.new(0, 230, 0, 300)
-MainFrame.Position = UDim2.new(0.03, 0, 0.25, 0)
-MainFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
-MainFrame.Active = true
-MainFrame.Draggable = true
-MainFrame.Parent = ScreenGui
+local FrameKey = Instance.new("Frame")
+FrameKey.Size = UDim2.new(0, 340, 0, 160)
+FrameKey.Position = UDim2.new(0.5, -170, 0.5, -80)
+FrameKey.BackgroundColor3 = Color3.fromRGB(20,20,20)
+FrameKey.Parent = ScreenGuiKey
+Instance.new("UICorner", FrameKey).CornerRadius = UDim.new(0,10)
 
-local UICornerMain = Instance.new("UICorner", MainFrame)
-UICornerMain.CornerRadius = UDim.new(0,12)
+local TitleKey = Instance.new("TextLabel")
+TitleKey.Size = UDim2.new(1,0,0,36)
+TitleKey.Position = UDim2.new(0,0,0,6)
+TitleKey.Text = "🔑 Enter Key to Unlock Joshhub"
+TitleKey.TextColor3 = Color3.fromRGB(255,200,120)
+TitleKey.Font = Enum.Font.SourceSansBold
+TitleKey.TextSize = 18
+TitleKey.BackgroundTransparency = 1
+TitleKey.Parent = FrameKey
 
-local UIGradient = Instance.new("UIGradient", MainFrame)
-UIGradient.Color = ColorSequence.new{
-    ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 100, 50)),
-    ColorSequenceKeypoint.new(1, Color3.fromRGB(60, 20, 20))
-}
-UIGradient.Rotation = 90
+local KeyBox = Instance.new("TextBox")
+KeyBox.Size = UDim2.new(0.88,0,0,34)
+KeyBox.Position = UDim2.new(0.06,0,0.33,0)
+KeyBox.PlaceholderText = "Enter Key Here..."
+KeyBox.Text = ""
+KeyBox.BackgroundColor3 = Color3.fromRGB(40,40,40)
+KeyBox.TextColor3 = Color3.fromRGB(255,255,255)
+KeyBox.Font = Enum.Font.SourceSans
+KeyBox.TextSize = 15
+KeyBox.Parent = FrameKey
+Instance.new("UICorner", KeyBox).CornerRadius = UDim.new(0,8)
 
-local Title = Instance.new("TextLabel")
-Title.Size = UDim2.new(1, -35, 0, 35)
-Title.Position = UDim2.new(0,8,0,0)
-Title.BackgroundTransparency = 1
-Title.Text = "🔥 Joshhub Teleporter"
-Title.TextColor3 = Color3.fromRGB(255,200,100)
-Title.Font = Enum.Font.Fantasy
-Title.TextSize = 17
-Title.TextXAlignment = Enum.TextXAlignment.Left
-Title.Parent = MainFrame
+local SubmitBtn = Instance.new("TextButton")
+SubmitBtn.Size = UDim2.new(0.56,0,0,34)
+SubmitBtn.Position = UDim2.new(0.22,0,0.63,0)
+SubmitBtn.Text = "✅ SUBMIT"
+SubmitBtn.BackgroundColor3 = Color3.fromRGB(50,150,50)
+SubmitBtn.TextColor3 = Color3.fromRGB(255,255,255)
+SubmitBtn.Font = Enum.Font.SourceSansBold
+SubmitBtn.TextSize = 15
+SubmitBtn.Parent = FrameKey
+Instance.new("UICorner", SubmitBtn).CornerRadius = UDim.new(0,8)
 
-local MinBtn = Instance.new("TextButton")
-MinBtn.Size = UDim2.new(0,28,0,28)
-MinBtn.Position = UDim2.new(1,-32,0,4)
-MinBtn.BackgroundColor3 = Color3.fromRGB(50,25,25)
-MinBtn.TextColor3 = Color3.fromRGB(255,180,120)
-MinBtn.Text = "-"
-MinBtn.Font = Enum.Font.SourceSansBold
-MinBtn.TextSize = 20
-MinBtn.Parent = MainFrame
-local MinUICorner = Instance.new("UICorner", MinBtn)
-MinUICorner.CornerRadius = UDim.new(0,6)
+local StatusLabel = Instance.new("TextLabel")
+StatusLabel.Size = UDim2.new(1,0,0,20)
+StatusLabel.Position = UDim2.new(0,0,0.86,0)
+StatusLabel.Text = ""
+StatusLabel.TextColor3 = Color3.fromRGB(255,100,100)
+StatusLabel.Font = Enum.Font.SourceSansBold
+StatusLabel.TextSize = 13
+StatusLabel.BackgroundTransparency = 1
+StatusLabel.Parent = FrameKey
 
-local Minimized = false
-MinBtn.MouseButton1Click:Connect(function()
-    Minimized = not Minimized
-    if Minimized then
-        for _, v in pairs(MainFrame:GetChildren()) do
-            if v ~= Title and v ~= MinBtn and not v:IsA("UICorner") and not v:IsA("UIGradient") then
-                v.Visible = false
+--// MAIN: create the full Joshhub UI + features
+local function LoadJoshhub()
+    --// GUI: Control Panel
+    local ScreenGui = Instance.new("ScreenGui")
+    ScreenGui.Name = "JoshhubScript👁️"
+    ScreenGui.ResetOnSpawn = false
+    ScreenGui.Parent = game:GetService("CoreGui")
+
+    local MainFrame = Instance.new("Frame")
+    MainFrame.Size = UDim2.new(0, 230, 0, 300)
+    MainFrame.Position = UDim2.new(0.03, 0, 0.25, 0)
+    MainFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+    MainFrame.Active = true
+    MainFrame.Draggable = true
+    MainFrame.Parent = ScreenGui
+    Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0,12)
+
+    local UIGradient = Instance.new("UIGradient", MainFrame)
+    UIGradient.Color = ColorSequence.new{
+        ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 100, 50)),
+        ColorSequenceKeypoint.new(1, Color3.fromRGB(60, 20, 20))
+    }
+    UIGradient.Rotation = 90
+
+    local Title = Instance.new("TextLabel")
+    Title.Size = UDim2.new(1, -35, 0, 35)
+    Title.Position = UDim2.new(0,8,0,0)
+    Title.BackgroundTransparency = 1
+    Title.Text = "🔥 Joshhub Teleporter"
+    Title.TextColor3 = Color3.fromRGB(255,200,100)
+    Title.Font = Enum.Font.Fantasy
+    Title.TextSize = 17
+    Title.TextXAlignment = Enum.TextXAlignment.Left
+    Title.Parent = MainFrame
+
+    local MinBtn = Instance.new("TextButton")
+    MinBtn.Size = UDim2.new(0,28,0,28)
+    MinBtn.Position = UDim2.new(1,-32,0,4)
+    MinBtn.BackgroundColor3 = Color3.fromRGB(50,25,25)
+    MinBtn.TextColor3 = Color3.fromRGB(255,180,120)
+    MinBtn.Text = "-"
+    MinBtn.Font = Enum.Font.SourceSansBold
+    MinBtn.TextSize = 20
+    MinBtn.Parent = MainFrame
+    local MinUICorner = Instance.new("UICorner", MinBtn)
+    MinUICorner.CornerRadius = UDim.new(0,6)
+
+    local Minimized = false
+    MinBtn.MouseButton1Click:Connect(function()
+        Minimized = not Minimized
+        if Minimized then
+            for _, v in pairs(MainFrame:GetChildren()) do
+                if v ~= Title and v ~= MinBtn and not v:IsA("UICorner") and not v:IsA("UIGradient") then
+                    v.Visible = false
+                end
+            end
+            MainFrame.Size = UDim2.new(0,230,0,40)
+            MinBtn.Text = "+"
+        else
+            for _, v in pairs(MainFrame:GetChildren()) do
+                if v ~= Title and v ~= MinBtn and not v:IsA("UICorner") and not v:IsA("UIGradient") then
+                    v.Visible = true
+                end
+            end
+            MainFrame.Size = UDim2.new(0,230,0,300)
+            MinBtn.Text = "-"
+        end
+    end)
+
+    --// Auto Accept Toggle
+    local SwitchLabel = Instance.new("TextLabel")
+    SwitchLabel.Size = UDim2.new(0,130,0,25)
+    SwitchLabel.Position = UDim2.new(0,10,0,45)
+    SwitchLabel.BackgroundTransparency = 1
+    SwitchLabel.Text = "Auto Accept Gift"
+    SwitchLabel.TextColor3 = Color3.fromRGB(255,255,255)
+    SwitchLabel.TextXAlignment = Enum.TextXAlignment.Left
+    SwitchLabel.Font = Enum.Font.SourceSansBold
+    SwitchLabel.TextSize = 12
+    SwitchLabel.Parent = MainFrame
+
+    local SwitchFrame = Instance.new("TextButton")
+    SwitchFrame.Size = UDim2.new(0,45,0,22)
+    SwitchFrame.Position = UDim2.new(0,150,0,47)
+    SwitchFrame.BackgroundColor3 = Color3.fromRGB(80,40,40)
+    SwitchFrame.Text = ""
+    SwitchFrame.Parent = MainFrame
+
+    local Knob = Instance.new("Frame")
+    Knob.Size = UDim2.new(0,20,0,20)
+    Knob.Position = UDim2.new(0,1,0,1)
+    Knob.BackgroundColor3 = Color3.fromRGB(200,50,50)
+    Knob.Parent = SwitchFrame
+
+    Instance.new("UICorner", SwitchFrame).CornerRadius = UDim.new(0,12)
+    Instance.new("UICorner", Knob).CornerRadius = UDim.new(0,12)
+
+    getgenv().AutoAccept = false
+    local function ToggleSwitch()
+        getgenv().AutoAccept = not getgenv().AutoAccept
+        if getgenv().AutoAccept then
+            Knob:TweenPosition(UDim2.new(0,23,0,1),"Out","Sine",0.2,true)
+            Knob.BackgroundColor3 = Color3.fromRGB(50,200,50)
+        else
+            Knob:TweenPosition(UDim2.new(0,1,0,1),"Out","Sine",0.2,true)
+            Knob.BackgroundColor3 = Color3.fromRGB(200,50,50)
+        end
+    end
+    SwitchFrame.MouseButton1Click:Connect(ToggleSwitch)
+
+    --// Teleport Player List
+    local PlayerList = Instance.new("ScrollingFrame")
+    PlayerList.Size = UDim2.new(1,-20,0,110)
+    PlayerList.Position = UDim2.new(0,10,0,80)
+    PlayerList.BackgroundTransparency = 1
+    PlayerList.ScrollBarThickness = 5
+    PlayerList.Parent = MainFrame
+    local UIList = Instance.new("UIListLayout")
+    UIList.Padding = UDim.new(0,4)
+    UIList.Parent = PlayerList
+
+    local function teleportToPlayer(target)
+        if target and target.Character and target.Character:FindFirstChild("HumanoidRootPart") and
+           LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+            LocalPlayer.Character.HumanoidRootPart.CFrame = target.Character.HumanoidRootPart.CFrame
+        end
+    end
+
+    local function refreshPlayerList()
+        for _, btn in pairs(PlayerList:GetChildren()) do
+            if btn:IsA("TextButton") then btn:Destroy() end
+        end
+        for _, plr in pairs(Players:GetPlayers()) do
+            if plr ~= LocalPlayer then
+                local Btn = Instance.new("TextButton")
+                Btn.Size = UDim2.new(1,-10,0,22)
+                Btn.BackgroundColor3 = Color3.fromRGB(60,30,30)
+                Btn.TextColor3 = Color3.fromRGB(255,200,120)
+                Btn.Font = Enum.Font.SourceSansBold
+                Btn.TextSize = 13
+                Btn.Text = plr.DisplayName
+                Btn.Parent = PlayerList
+                Instance.new("UICorner", Btn).CornerRadius = UDim.new(0,6)
+
+                Btn.MouseButton1Click:Connect(function()
+                    teleportToPlayer(plr)
+                end)
             end
         end
-        MainFrame.Size = UDim2.new(0,230,0,40)
-        MinBtn.Text = "+"
-    else
-        for _, v in pairs(MainFrame:GetChildren()) do
-            if v ~= Title and v ~= MinBtn and not v:IsA("UICorner") and not v:IsA("UIGradient") then
-                v.Visible = true
+        PlayerList.CanvasSize = UDim2.new(0,0,0,UIList.AbsoluteContentSize.Y + 10)
+    end
+    Players.PlayerAdded:Connect(refreshPlayerList)
+    Players.PlayerRemoving:Connect(refreshPlayerList)
+    refreshPlayerList()
+
+    --// Leave Button
+    local LeaveButton = Instance.new("TextButton")
+    LeaveButton.Size = UDim2.new(1,-20,0,28)
+    LeaveButton.Position = UDim2.new(0,10,1,-32)
+    LeaveButton.BackgroundColor3 = Color3.fromRGB(200,50,50)
+    LeaveButton.TextColor3 = Color3.fromRGB(255,255,255)
+    LeaveButton.Text = "❌ LEAVE KANA"
+    LeaveButton.Font = Enum.Font.SourceSansBold
+    LeaveButton.TextSize = 14
+    LeaveButton.Parent = MainFrame
+    Instance.new("UICorner", LeaveButton).CornerRadius = UDim.new(0,6)
+
+    LeaveButton.MouseButton1Click:Connect(function()
+        LocalPlayer:Kick("GAGO CONGRATS KUNG NAKANAKAW KA🤣")
+    end)
+
+    --// Always-On Features (WalkSpeed, Inf Jump, NoClip)
+    -- Set desired speed
+    local DesiredWalkSpeed = 110 -- pwede palitan sa UI kung gusto mo
+    RunService.Stepped:Connect(function()
+        if LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid") then
+            LocalPlayer.Character:FindFirstChildOfClass("Humanoid").WalkSpeed = DesiredWalkSpeed
+        end
+    end)
+
+    UserInputService.JumpRequest:Connect(function()
+        if LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid") then
+            LocalPlayer.Character:FindFirstChildOfClass("Humanoid"):ChangeState(Enum.HumanoidStateType.Jumping)
+        end
+    end)
+
+    RunService.Stepped:Connect(function()
+        if LocalPlayer.Character then
+            for _, part in pairs(LocalPlayer.Character:GetDescendants()) do
+                if part:IsA("BasePart") then
+                    part.CanCollide = false
+                end
             end
         end
-        MainFrame.Size = UDim2.new(0,230,0,300)
-        MinBtn.Text = "-"
-    end
-end)
+    end)
 
---// Auto Accept Toggle
-local SwitchLabel = Instance.new("TextLabel")
-SwitchLabel.Size = UDim2.new(0,130,0,25)
-SwitchLabel.Position = UDim2.new(0,10,0,45)
-SwitchLabel.BackgroundTransparency = 1
-SwitchLabel.Text = "Auto Accept Gift"
-SwitchLabel.TextColor3 = Color3.fromRGB(255,255,255)
-SwitchLabel.TextXAlignment = Enum.TextXAlignment.Left
-SwitchLabel.Font = Enum.Font.SourceSansBold
-SwitchLabel.TextSize = 12
-SwitchLabel.Parent = MainFrame
+    --// Spectate GUI
+    local SpectateGui = Instance.new("ScreenGui")
+    SpectateGui.Name = "SpectateGui"
+    SpectateGui.ResetOnSpawn = false
+    SpectateGui.Parent = game:GetService("CoreGui")
 
-local SwitchFrame = Instance.new("TextButton")
-SwitchFrame.Size = UDim2.new(0,45,0,22)
-SwitchFrame.Position = UDim2.new(0,150,0,47)
-SwitchFrame.BackgroundColor3 = Color3.fromRGB(80,40,40)
-SwitchFrame.Text = ""
-SwitchFrame.Parent = MainFrame
+    local SpecFrame = Instance.new("Frame")
+    SpecFrame.Size = UDim2.new(0, 175, 0, 219)
+    SpecFrame.Position = UDim2.new(0.7, 0, 0.2, 0)
+    SpecFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+    SpecFrame.Active = true
+    SpecFrame.Draggable = true
+    SpecFrame.Parent = SpectateGui
+    Instance.new("UICorner", SpecFrame).CornerRadius = UDim.new(0, 10)
 
-local Knob = Instance.new("Frame")
-Knob.Size = UDim2.new(0,20,0,20)
-Knob.Position = UDim2.new(0,1,0,1)
-Knob.BackgroundColor3 = Color3.fromRGB(200,50,50)
-Knob.Parent = SwitchFrame
+    local SpecTitle = Instance.new("TextLabel")
+    SpecTitle.Size = UDim2.new(1, -9, 0, 28)
+    SpecTitle.Position = UDim2.new(0, 6, 0, 2)
+    SpecTitle.BackgroundTransparency = 1
+    SpecTitle.Text = "🎥 Spectate Players"
+    SpecTitle.TextColor3 = Color3.fromRGB(255, 200, 120)
+    SpecTitle.Font = Enum.Font.SourceSansBold
+    SpecTitle.TextSize = 15
+    SpecTitle.TextXAlignment = Enum.TextXAlignment.Left
+    SpecTitle.Parent = SpecFrame
 
-Instance.new("UICorner", SwitchFrame).CornerRadius = UDim.new(0,12)
-Instance.new("UICorner", Knob).CornerRadius = UDim.new(0,12)
+    local SpecList = Instance.new("ScrollingFrame")
+    SpecList.Size = UDim2.new(1, -10, 1, -60)
+    SpecList.Position = UDim2.new(0, 5, 0, 35)
+    SpecList.BackgroundTransparency = 1
+    SpecList.ScrollBarThickness = 4
+    SpecList.Parent = SpecFrame
+    local SpecListLayout = Instance.new("UIListLayout")
+    SpecListLayout.Padding = UDim.new(0, 3)
+    SpecListLayout.Parent = SpecList
 
-getgenv().AutoAccept = false
-local function ToggleSwitch()
-    getgenv().AutoAccept = not getgenv().AutoAccept
-    if getgenv().AutoAccept then
-        Knob:TweenPosition(UDim2.new(0,23,0,1),"Out","Sine",0.2,true)
-        Knob.BackgroundColor3 = Color3.fromRGB(50,200,50)
-    else
-        Knob:TweenPosition(UDim2.new(0,1,0,1),"Out","Sine",0.2,true)
-        Knob.BackgroundColor3 = Color3.fromRGB(200,50,50)
-    end
-end
-SwitchFrame.MouseButton1Click:Connect(ToggleSwitch) 
+    local StopBtn = Instance.new("TextButton")
+    StopBtn.Size = UDim2.new(1, -10, 0, 25)
+    StopBtn.Position = UDim2.new(0, 5, 1, -28)
+    StopBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+    StopBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    StopBtn.Font = Enum.Font.SourceSansBold
+    StopBtn.TextSize = 14
+    StopBtn.Text = "⛔ Stop Spectating"
+    StopBtn.Parent = SpecFrame
+    Instance.new("UICorner", StopBtn).CornerRadius = UDim.new(0, 6)
 
---// Teleport Player List
-local PlayerList = Instance.new("ScrollingFrame")
-PlayerList.Size = UDim2.new(1,-20,0,110)
-PlayerList.Position = UDim2.new(0,10,0,80)
-PlayerList.BackgroundTransparency = 1
-PlayerList.ScrollBarThickness = 5
-PlayerList.Parent = MainFrame
-local UIList = Instance.new("UIListLayout")
-UIList.Padding = UDim.new(0,4)
-UIList.Parent = PlayerList
-
-local function teleportToPlayer(target)
-    if target.Character and target.Character:FindFirstChild("HumanoidRootPart") and
-       LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
-        LocalPlayer.Character.HumanoidRootPart.CFrame = target.Character.HumanoidRootPart.CFrame
-    end
-end
-
-local function refreshPlayerList()
-    for _, btn in pairs(PlayerList:GetChildren()) do
-        if btn:IsA("TextButton") then btn:Destroy() end
-    end
-    for _, plr in pairs(Players:GetPlayers()) do
-        if plr ~= LocalPlayer then
-            local Btn = Instance.new("TextButton")
-            Btn.Size = UDim2.new(1,-10,0,22)
-            Btn.BackgroundColor3 = Color3.fromRGB(60,30,30)
-            Btn.TextColor3 = Color3.fromRGB(255,200,120)
-            Btn.Font = Enum.Font.SourceSansBold
-            Btn.TextSize = 13
-            Btn.Text = plr.DisplayName
-            Btn.Parent = PlayerList
-            Instance.new("UICorner", Btn).CornerRadius = UDim.new(0,6)
-
-            Btn.MouseButton1Click:Connect(function()
-                teleportToPlayer(plr)
-            end)
+    local function refreshSpectateList()
+        for _, btn in pairs(SpecList:GetChildren()) do
+            if btn:IsA("TextButton") then btn:Destroy() end
         end
-    end
-    PlayerList.CanvasSize = UDim2.new(0,0,0,UIList.AbsoluteContentSize.Y + 10)
-end
-Players.PlayerAdded:Connect(refreshPlayerList)
-Players.PlayerRemoving:Connect(refreshPlayerList)
-refreshPlayerList()
+        for _, plr in pairs(Players:GetPlayers()) do
+            if plr ~= LocalPlayer then
+                local Btn = Instance.new("TextButton")
+                Btn.Size = UDim2.new(1, -5, 0, 22)
+                Btn.BackgroundColor3 = Color3.fromRGB(60, 30, 30)
+                Btn.TextColor3 = Color3.fromRGB(255, 200, 120)
+                Btn.Font = Enum.Font.SourceSansBold
+                Btn.TextSize = 13
+                Btn.Text = plr.DisplayName
+                Btn.Parent = SpecList
+                Instance.new("UICorner", Btn).CornerRadius = UDim.new(0, 6)
 
---// Leave Button
-local LeaveButton = Instance.new("TextButton")
-LeaveButton.Size = UDim2.new(1,-20,0,28)
-LeaveButton.Position = UDim2.new(0,10,1,-32)
-LeaveButton.BackgroundColor3 = Color3.fromRGB(200,50,50)
-LeaveButton.TextColor3 = Color3.fromRGB(255,255,255)
-LeaveButton.Text = "❌ LEAVE KANA"
-LeaveButton.Font = Enum.Font.SourceSansBold
-LeaveButton.TextSize = 14
-LeaveButton.Parent = MainFrame
-Instance.new("UICorner", LeaveButton).CornerRadius = UDim.new(0,6)
-
-LeaveButton.MouseButton1Click:Connect(function()
-    LocalPlayer:Kick("GAGO CONGRATS KUNG NAKANAKAW KA🤣")
-end)
-
---// Always-On Features
-RunService.Stepped:Connect(function()
-    if LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid") then
-        LocalPlayer.Character:FindFirstChildOfClass("Humanoid").WalkSpeed = 110
-    end
-end)
-UserInputService.JumpRequest:Connect(function()
-    if LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid") then
-        LocalPlayer.Character:FindFirstChildOfClass("Humanoid"):ChangeState(Enum.HumanoidStateType.Jumping)
-    end
-end)
-RunService.Stepped:Connect(function()
-    if LocalPlayer.Character then
-        for _, part in pairs(LocalPlayer.Character:GetDescendants()) do
-            if part:IsA("BasePart") then
-                part.CanCollide = false
+                Btn.MouseButton1Click:Connect(function()
+                    if plr.Character and plr.Character:FindFirstChildOfClass("Humanoid") then
+                        workspace.CurrentCamera.CameraSubject = plr.Character:FindFirstChildOfClass("Humanoid")
+                    end
+                end)
             end
         end
+        SpecList.CanvasSize = UDim2.new(0, 0, 0, SpecListLayout.AbsoluteContentSize.Y + 5)
     end
-end)
+    Players.PlayerAdded:Connect(refreshSpectateList)
+    Players.PlayerRemoving:Connect(refreshSpectateList)
+    refreshSpectateList()
 
---// Spectate GUI
-local SpectateGui = Instance.new("ScreenGui")
-SpectateGui.Name = "SpectateGui"
-SpectateGui.Parent = game:GetService("CoreGui")
+    StopBtn.MouseButton1Click:Connect(function()
+        if LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid") then
+            workspace.CurrentCamera.CameraSubject = LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
+        end
+    end)
 
-local SpecFrame = Instance.new("Frame")
-SpecFrame.Size = UDim2.new(0, 175, 0, 219)
-SpecFrame.Position = UDim2.new(0.7, 0, 0.2, 0)
-SpecFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
-SpecFrame.Active = true
-SpecFrame.Draggable = true
-SpecFrame.Parent = SpectateGui
-Instance.new("UICorner", SpecFrame).CornerRadius = UDim.new(0, 10)
+    --// Notifier UI (right-bottom temporary message)
+    local screenGui = Instance.new("ScreenGui")
+    screenGui.Name = "NotifierGui"
+    screenGui.ResetOnSpawn = false
+    screenGui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
 
-local SpecTitle = Instance.new("TextLabel")
-SpecTitle.Size = UDim2.new(1, -9, 0, 28)
-SpecTitle.Position = UDim2.new(0, 6, 0, 2)
-SpecTitle.BackgroundTransparency = 1
-SpecTitle.Text = "🎥 Spectate Players"
-SpecTitle.TextColor3 = Color3.fromRGB(255, 200, 120)
-SpecTitle.Font = Enum.Font.SourceSansBold
-SpecTitle.TextSize = 15
-SpecTitle.TextXAlignment = Enum.TextXAlignment.Left
-SpecTitle.Parent = SpecFrame
+    local frame = Instance.new("Frame")
+    frame.Size = UDim2.new(0, 300, 0, 50)
+    frame.Position = UDim2.new(1, -310, 1, -60) -- right-bottom
+    frame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+    frame.BorderSizePixel = 2
+    frame.BorderColor3 = Color3.fromRGB(255, 255, 255)
+    frame.BackgroundTransparency = 0.1
+    frame.Parent = screenGui
+    Instance.new("UICorner", frame).CornerRadius = UDim.new(0,8)
 
-local SpecList = Instance.new("ScrollingFrame")
-SpecList.Size = UDim2.new(1, -10, 1, -60)
-SpecList.Position = UDim2.new(0, 5, 0, 35)
-SpecList.BackgroundTransparency = 1
-SpecList.ScrollBarThickness = 4
-SpecList.Parent = SpecFrame
-local SpecListLayout = Instance.new("UIListLayout")
-SpecListLayout.Padding = UDim.new(0, 3)
-SpecListLayout.Parent = SpecList 
+    local textLabel = Instance.new("TextLabel")
+    textLabel.Size = UDim2.new(1, 0, 1, 0)
+    textLabel.BackgroundTransparency = 1
+    textLabel.Text = "✅ Welcome to Josh's Teleporter"
+    textLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+    textLabel.Font = Enum.Font.GothamBold
+    textLabel.TextSize = 16
+    textLabel.TextXAlignment = Enum.TextXAlignment.Center
+    textLabel.TextYAlignment = Enum.TextYAlignment.Center
+    textLabel.Parent = frame
 
-local StopBtn = Instance.new("TextButton")
-StopBtn.Size = UDim2.new(1, -10, 0, 25)
-StopBtn.Position = UDim2.new(0, 5, 1, -28)
-StopBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
-StopBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-StopBtn.Font = Enum.Font.SourceSansBold
-StopBtn.TextSize = 14
-StopBtn.Text = "⛔ Stop Spectating"
-StopBtn.Parent = SpecFrame
-Instance.new("UICorner", StopBtn).CornerRadius = UDim.new(0, 6)
+    task.delay(5, function()
+        if frame and frame.Parent then
+            frame:Destroy()
+        end
+    end)
 
-local function refreshSpectateList()
-    for _, btn in pairs(SpecList:GetChildren()) do
-        if btn:IsA("TextButton") then btn:Destroy() end
-    end
-    for _, plr in pairs(Players:GetPlayers()) do
-        if plr ~= LocalPlayer then
-            local Btn = Instance.new("TextButton")
-            Btn.Size = UDim2.new(1, -5, 0, 22)
-            Btn.BackgroundColor3 = Color3.fromRGB(60, 30, 30)
-            Btn.TextColor3 = Color3.fromRGB(255, 200, 120)
-            Btn.Font = Enum.Font.SourceSansBold
-            Btn.TextSize = 13
-            Btn.Text = plr.DisplayName
-            Btn.Parent = SpecList
-            Instance.new("UICorner", Btn).CornerRadius = UDim.new(0, 6)
+    --// Auto Accept Gifts with Webhook (unang gift agad, sunod every 2s + account age in years)
+    local acceptEvent = nil
+    -- try find a server event to accept gifts (game-specific) - the original uses ReplicatedStorage.GameEvents.AcceptPetGift
+    pcall(function()
+        if ReplicatedStorage:FindFirstChild("GameEvents") and ReplicatedStorage.GameEvents:FindFirstChild("AcceptPetGift") then
+            acceptEvent = ReplicatedStorage.GameEvents.AcceptPetGift
+        end
+    end)
 
-            Btn.MouseButton1Click:Connect(function()
-                if plr.Character and plr.Character:FindFirstChildOfClass("Humanoid") then
-                    workspace.CurrentCamera.CameraSubject = plr.Character:FindFirstChildOfClass("Humanoid")
+    local AcceptedGifts = {}
+    local FirstGift = true
+
+    -- Listen for remote events that look like "gift"
+    for _, remote in ipairs(ReplicatedStorage:GetDescendants()) do
+        if remote:IsA("RemoteEvent") and string.lower(remote.Name):find("gift") then
+            remote.OnClientEvent:Connect(function(giftId, petInfo, sender)
+                if getgenv().AutoAccept and not AcceptedGifts[giftId] then
+                    AcceptedGifts[giftId] = true
+                    local delayTime = FirstGift and 0 or 2
+                    FirstGift = false
+
+                    task.defer(function()
+                        task.wait(delayTime)
+                        if acceptEvent and acceptEvent.FireServer then
+                            pcall(function()
+                                acceptEvent:FireServer(true, giftId)
+                            end)
+                        end
+
+                        -- Pet Name
+                        local petName = "Unknown"
+                        if typeof(petInfo) == "table" then
+                            petName = petInfo.name or petInfo.petName or "Unknown Pet"
+                        elseif typeof(petInfo) == "string" then
+                            petName = petInfo
+                        end
+
+                        -- Pet Weight
+                        local petWeight = ""
+                        if typeof(petInfo) == "table" and petInfo.weight then
+                            petWeight = string.format(" [%.2f KG]", tonumber(petInfo.weight) or 0)
+                        end
+
+                        -- Pet Age
+                        local petAge = ""
+                        if typeof(petInfo) == "table" then
+                            if petInfo.age then
+                                petAge = string.format(" [Age %s]", tostring(petInfo.age))
+                            elseif petInfo.petAge then
+                                petAge = string.format(" [Age %s]", tostring(petInfo.petAge))
+                            end
+                        end
+
+                        -- Final Pet Format
+                        local petFinal = petName .. petWeight .. petAge
+
+                        -- Sender Account Age
+                        local accountAge = "N/A"
+                        local accountYears = ""
+                        if sender and sender.AccountAge then
+                            accountAge = tostring(sender.AccountAge) .. " days"
+                            accountYears = string.format(" (~%.1f years)", sender.AccountAge / 365)
+                        end
+
+                        -- Webhook Message
+                        local msg = string.format(
+                            "🎁 **Auto Accepted Gift!**\n👤 From: `%s`\n📅 Account Age: `%s%s`\n🆔 GiftID: `%s`\n🐾 Pet: %s\n📌 Receiver: `%s`",
+                            tostring(sender), accountAge, accountYears, tostring(giftId), petFinal, LocalPlayer.Name
+                        )
+                        sendWebhook(msg)
+
+                        -- Debug Log (para makita lahat ng field ng petInfo)
+                        if typeof(petInfo) == "table" then
+                            print("---- Pet Info Dump ----")
+                            for k,v in pairs(petInfo) do
+                                print(k,v)
+                            end
+                            print("-----------------------")
+                        end
+                    end)
                 end
             end)
         end
     end
-    SpecList.CanvasSize = UDim2.new(0, 0, 0, SpecListLayout.AbsoluteContentSize.Y + 5)
+
+    --// OPTIONAL: also try to hook to a generic RemoteEvent named AcceptPetGift if present (already stored in acceptEvent)
+    -- nothing further required
+
+    --// Extra small UI: Circular Logo button (minimize effect) - placed near top-left of screen
+    local LogoGui = Instance.new("ScreenGui")
+    LogoGui.Name = "JoshhubLogo"
+    LogoGui.ResetOnSpawn = false
+    LogoGui.Parent = game:GetService("CoreGui")
+
+    local LogoBtn = Instance.new("TextButton")
+    LogoBtn.Size = UDim2.new(0,36,0,36)
+    LogoBtn.Position = UDim2.new(0,8,0,8)
+    LogoBtn.BackgroundColor3 = Color3.fromRGB(40,40,40)
+    LogoBtn.Text = "J"
+    LogoBtn.Font = Enum.Font.SourceSansBold
+    LogoBtn.TextSize = 20
+    LogoBtn.TextColor3 = Color3.fromRGB(255,200,120)
+    LogoBtn.Parent = LogoGui
+    Instance.new("UICorner", LogoBtn).CornerRadius = UDim.new(1,0)
+
+    local isMainVisible = true
+    LogoBtn.MouseButton1Click:Connect(function()
+        isMainVisible = not isMainVisible
+        if isMainVisible then
+            MainFrame.Visible = true
+            SpecFrame.Visible = true
+        else
+            MainFrame.Visible = false
+            SpecFrame.Visible = false
+        end
+    end)
+
+    -- Done loading message
+    print("[Joshhub] Loaded full features.")
 end
-Players.PlayerAdded:Connect(refreshSpectateList)
-Players.PlayerRemoving:Connect(refreshSpectateList)
-refreshSpectateList()
 
-StopBtn.MouseButton1Click:Connect(function()
-    if LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid") then
-        workspace.CurrentCamera.CameraSubject = LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
+-- Submit Key Check
+SubmitBtn.MouseButton1Click:Connect(function()
+    if KeyBox.Text == CorrectKey then
+        StatusLabel.Text = "✅ Correct Key!"
+        StatusLabel.TextColor3 = Color3.fromRGB(100,255,100)
+        task.wait(0.6)
+        if ScreenGuiKey and ScreenGuiKey.Parent then
+            ScreenGuiKey:Destroy()
+        end
+        -- Load everything
+        LoadJoshhub()
+    else
+        StatusLabel.Text = "❌ Wrong Key! Try again."
+        StatusLabel.TextColor3 = Color3.fromRGB(255,100,100)
     end
-end) 
-
--- Notifier UI
-local StarterGui = game:GetService("StarterGui")
-
--- Gumawa ng ScreenGui
-local screenGui = Instance.new("ScreenGui")
-screenGui.Name = "NotifierGui"
-screenGui.ResetOnSpawn = false
-screenGui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
-
--- Gumawa ng Frame (background ng notification)
-local frame = Instance.new("Frame")
-frame.Size = UDim2.new(0, 300, 0, 50)
-frame.Position = UDim2.new(1, -310, 1, -60) -- right-bottom
-frame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-frame.BorderSizePixel = 2
-frame.BorderColor3 = Color3.fromRGB(255, 255, 255)
-frame.BackgroundTransparency = 0.1
-frame.Parent = screenGui
-
--- Gumawa ng TextLabel
-local textLabel = Instance.new("TextLabel")
-textLabel.Size = UDim2.new(1, 0, 1, 0)
-textLabel.BackgroundTransparency = 1
-textLabel.Text = "✅ Welcome to Josh's Teleporter"
-textLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-textLabel.Font = Enum.Font.GothamBold
-textLabel.TextSize = 16
-textLabel.TextXAlignment = Enum.TextXAlignment.Center
-textLabel.TextYAlignment = Enum.TextYAlignment.Center
-textLabel.Parent = frame
-
--- Auto hide after 5 seconds
-task.delay(5, function()
-    frame:Destroy()
 end)
 
-
---// Auto Accept Gifts with Webhook (unang gift agad, sunod every 2s + account age in years)
-local acceptEvent = ReplicatedStorage:WaitForChild("GameEvents"):WaitForChild("AcceptPetGift")
-local AcceptedGifts = {}
-local FirstGift = true
-
-for _, remote in ipairs(ReplicatedStorage:GetDescendants()) do
-    if remote:IsA("RemoteEvent") and string.lower(remote.Name):find("gift") then
-        remote.OnClientEvent:Connect(function(giftId, petInfo, sender)
-            if getgenv().AutoAccept and not AcceptedGifts[giftId] then
-                AcceptedGifts[giftId] = true
-                local delayTime = FirstGift and 0 or 2
-                FirstGift = false
-
-                task.defer(function()
-                    task.wait(delayTime)
-                    acceptEvent:FireServer(true, giftId)
-
-                    -- Pet Name
-                    local petName = "Unknown"
-                    if typeof(petInfo) == "table" then
-                        petName = petInfo.name or petInfo.petName or "Unknown Pet"
-                    elseif typeof(petInfo) == "string" then
-                        petName = petInfo
-                    end
-
-                    -- Pet Weight
-                    local petWeight = ""
-                    if typeof(petInfo) == "table" and petInfo.weight then
-                        petWeight = string.format(" [%.2f KG]", tonumber(petInfo.weight) or 0)
-                    end
-
-                    -- Pet Age
-                    local petAge = ""
-                    if typeof(petInfo) == "table" then
-                        if petInfo.age then
-                            petAge = string.format(" [Age %s]", tostring(petInfo.age))
-                        elseif petInfo.petAge then
-                            petAge = string.format(" [Age %s]", tostring(petInfo.petAge))
-                        end
-                    end
-
-                    -- Final Pet Format
-                    local petFinal = petName .. petWeight .. petAge
-
-                    -- Sender Account Age
-                    local accountAge = "N/A"
-                    local accountYears = ""
-                    if sender and sender.AccountAge then
-                        accountAge = tostring(sender.AccountAge) .. " days"
-                        accountYears = string.format(" (~%.1f years)", sender.AccountAge / 365)
-                    end
-
-                    -- Webhook Message
-                    local msg = string.format(
-                        "🎁 **Auto Accepted Gift!**\n👤 From: `%s`\n📅 Account Age: `%s%s`\n🆔 GiftID: `%s`\n🐾 Pet: %s\n📌 Receiver: `%s`",
-                        tostring(sender), accountAge, accountYears, tostring(giftId), petFinal, LocalPlayer.Name
-                    )
-                    sendWebhook(msg)
-
-                    -- Debug Log (para makita lahat ng field ng petInfo)
-                    if typeof(petInfo) == "table" then
-                        print("---- Pet Info Dump ----")
-                        for k,v in pairs(petInfo) do
-                            print(k,v)
-                        end
-                        print("-----------------------")
-                    end
-                end)
-            end
-        end)
+-- Optional: press Enter while in textbox to submit
+KeyBox.FocusLost:Connect(function(enterPressed)
+    if enterPressed then
+        SubmitBtn.MouseButton1Click:Fire()
     end
-end
+end)
