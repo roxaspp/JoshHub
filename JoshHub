@@ -1,40 +1,24 @@
---// JoshHub Dual Key Loader + Notifier (FIXED)
---// Owner: JoshroxasScript
+--// Super Simple UI Test
+local gui = Instance.new("ScreenGui")
+gui.Name = "TestUI"
 
---// Services
-local Players = game:GetService("Players")
-local TweenService = game:GetService("TweenService")
-
---// CONFIG
-local NormalKey = "Normal123"            -- 🔑 Normal Key
-local PremiumKey = "Premium123@GFall"    -- 🔑 Premium Key
-local DiscordInvite = "https://discord.gg/YourServer" -- link ng server mo
-
--- Mga link ng scripts (palitan mo ito ng Pastebin/Gist mo)
-local NormalScriptURL = "https://raw.githubusercontent.com/roxaspp/JoshHub/refs/heads/main/JoshHubNormalKeyLoadstring"
-local PremiumScriptURL = "https://raw.githubusercontent.com/roxaspp/JoshHub/refs/heads/main/joshhubpremium"
-
---// UI Holder
-local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "JoshHubKeyUI"
-if syn and syn.protect_gui then
-    syn.protect_gui(ScreenGui)
-    ScreenGui.Parent = game.CoreGui
-elseif gethui then
-    ScreenGui.Parent = gethui()
+-- parent fix
+if gethui then
+    gui.Parent = gethui()
 else
-    ScreenGui.Parent = game.CoreGui
+    gui.Parent = game.CoreGui
 end
 
---// Frame
-local KeyFrame = Instance.new("Frame", ScreenGui)
-KeyFrame.Size = UDim2.new(0, 300, 0, 170)
-KeyFrame.Position = UDim2.new(0.5, -150, 0.5, -85)
-KeyFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-KeyFrame.BorderSizePixel = 0
-KeyFrame.Active = true
-KeyFrame.Draggable = true
+local frame = Instance.new("Frame", gui)
+frame.Size = UDim2.new(0, 200, 0, 100)
+frame.Position = UDim2.new(0.5, -100, 0.5, -50)
+frame.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
 
+local label = Instance.new("TextLabel", frame)
+label.Size = UDim2.new(1, 0, 1, 0)
+label.Text = "UI TEST"
+label.TextScaled = true
+label.TextColor3 = Color3.new(1,1,1)
 local Title = Instance.new("TextLabel", KeyFrame)
 Title.Size = UDim2.new(1, 0, 0, 30)
 Title.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
