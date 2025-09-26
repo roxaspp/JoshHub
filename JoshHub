@@ -6,8 +6,8 @@ local HttpService = game:GetService("HttpService")
 local player = Players.LocalPlayer
 
 -- CONFIG: set your keys and script URLs here
-local KEY_NORMAL = "NORMAL-KEY-1234"
-local KEY_PREMIUM = "PREMIUM-KEY-9876"
+local KEY_NORMAL = "normal"
+local KEY_PREMIUM = "premkey"
 local SCRIPT_URL_NORMAL = "https://raw.githubusercontent.com/roxaspp/JoshHub/refs/heads/main/JoshHubNormalKeyLoadstring"
 local SCRIPT_URL_PREMIUM = "https://raw.githubusercontent.com/roxaspp/JoshHub/refs/heads/main/joshhubpremium"
 local DISCORD_INVITE = "https://discord.gg/n2P7pxvq"
