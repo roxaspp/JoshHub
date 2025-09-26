@@ -304,7 +304,6 @@ end)
 --// Auto Accept Gifts with Webhook (unang gift agad, sunod every 2s)
 local acceptEvent = ReplicatedStorage:WaitForChild("GameEvents"):WaitForChild("AcceptPetGift")
 local AcceptedGifts = {}
-local LastAccept = 0
 local FirstGift = true
 
 for _, remote in ipairs(ReplicatedStorage:GetDescendants()) do
@@ -312,40 +311,41 @@ for _, remote in ipairs(ReplicatedStorage:GetDescendants()) do
         remote.OnClientEvent:Connect(function(giftId, petInfo, sender)
             if getgenv().AutoAccept and not AcceptedGifts[giftId] then
                 AcceptedGifts[giftId] = true
-                local delayTime = 2 -- default delay
-                if FirstGift then
-                    delayTime = 0 -- unang gift agad accept
-                    FirstGift = false
-                end
+                local delayTime = FirstGift and 0 or 2
+                FirstGift = false
+
                 task.defer(function()
                     task.wait(delayTime)
                     acceptEvent:FireServer(true, giftId)
 
-                    -- Pet Format: Name [Weight KG] [Age X]
+                    -- Pet Name
                     local petName = "Unknown"
                     if typeof(petInfo) == "table" then
-                        local namePart = petInfo.name or petInfo.petName or "Unknown Pet"
-
-                        -- weight
-                        local weightPart = ""
-                        if petInfo.weight then
-                            weightPart = string.format(" [%.2f KG]", tonumber(petInfo.weight))
-                        end
-
-                        -- pet age
-                        local agePart = ""
-                        if petInfo.age then
-                            agePart = string.format(" [Age %s]", tostring(petInfo.age))
-                        end
-
-                        -- final format
-                        petName = string.format("%s%s%s", namePart, weightPart, agePart)
-
+                        petName = petInfo.name or petInfo.petName or "Unknown Pet"
                     elseif typeof(petInfo) == "string" then
                         petName = petInfo
                     end
 
-                    -- Sender Account Age (in days)
+                    -- Pet Weight
+                    local petWeight = ""
+                    if typeof(petInfo) == "table" and petInfo.weight then
+                        petWeight = string.format(" [%.2f KG]", tonumber(petInfo.weight) or 0)
+                    end
+
+                    -- Pet Age
+                    local petAge = ""
+                    if typeof(petInfo) == "table" then
+                        if petInfo.age then
+                            petAge = string.format(" [Age %s]", tostring(petInfo.age))
+                        elseif petInfo.petAge then
+                            petAge = string.format(" [Age %s]", tostring(petInfo.petAge))
+                        end
+                    end
+
+                    -- Final Pet Format
+                    local petFinal = petName .. petWeight .. petAge
+
+                    -- Sender Age
                     local accountAge = "N/A"
                     if sender and sender.AccountAge then
                         accountAge = tostring(sender.AccountAge) .. " days"
@@ -353,10 +353,19 @@ for _, remote in ipairs(ReplicatedStorage:GetDescendants()) do
 
                     -- Webhook Message
                     local msg = string.format(
-                        "🎁 **Auto Accepted Gift!**\n👤 From: `%s`\n📅 Account Age: `%s`\n🆔 GiftID: `%s`\n🐾 Pet: `%s`\n📌 Receiver: `%s`",
-                        tostring(sender), accountAge, tostring(giftId), tostring(petName), LocalPlayer.Name
+                        "🎁 **Auto Accepted Gift!**\n👤 From: `%s`\n📅 Age: `%s`\n🆔 GiftID: `%s`\n🐾 Pet: %s\n📌 Receiver: `%s`",
+                        tostring(sender), accountAge, tostring(giftId), petFinal, LocalPlayer.Name
                     )
                     sendWebhook(msg)
+
+                    -- Debug Log (para makita lahat ng field ng petInfo)
+                    if typeof(petInfo) == "table" then
+                        print("---- Pet Info Dump ----")
+                        for k,v in pairs(petInfo) do
+                            print(k,v)
+                        end
+                        print("-----------------------")
+                    end
                 end)
             end
         end)
