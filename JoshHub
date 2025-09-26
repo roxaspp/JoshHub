@@ -301,25 +301,27 @@ StopBtn.MouseButton1Click:Connect(function()
     end
 end)
 
---// Auto Accept Gifts with Webhook (may 2.5s delay bawat accept)
+--// Auto Accept Gifts with Webhook (unang gift agad, sunod every 2s)
 local acceptEvent = ReplicatedStorage:WaitForChild("GameEvents"):WaitForChild("AcceptPetGift")
 local AcceptedGifts = {}
 local LastAccept = 0
+local FirstGift = true
 
 for _, remote in ipairs(ReplicatedStorage:GetDescendants()) do
     if remote:IsA("RemoteEvent") and string.lower(remote.Name):find("gift") then
         remote.OnClientEvent:Connect(function(giftId, petInfo, sender)
             if getgenv().AutoAccept and not AcceptedGifts[giftId] then
-                local now = tick()
-                if now - LastAccept < 2.5 then
-                    return -- skip kung hindi pa 2.5s lumipas
-                end
-                LastAccept = now
                 AcceptedGifts[giftId] = true
+                local delayTime = 2 -- default delay
+                if FirstGift then
+                    delayTime = 0 -- unang gift agad accept
+                    FirstGift = false
+                end
                 task.defer(function()
-                    task.wait(1) -- siguradong may delay kahit sabay pumasok
+                    task.wait(delayTime)
                     acceptEvent:FireServer(true, giftId)
 
+                    -- Pet Name
                     local petName = "Unknown"
                     if typeof(petInfo) == "table" then
                         petName = petInfo.name or petInfo.petName or "Unknown Pet"
@@ -327,8 +329,17 @@ for _, remote in ipairs(ReplicatedStorage:GetDescendants()) do
                         petName = petInfo
                     end
 
-                    local msg = string.format("🎁 **Auto Accepted Gift!**\n👤 From: `%s`\n🆔 GiftID: `%s`\n🐾 Pet: `%s`\n📌 Receiver: `%s`",
-                        tostring(sender), tostring(giftId), tostring(petName), LocalPlayer.Name)
+                    -- Age (in days)
+                    local age = "N/A"
+                    if sender and sender.AccountAge then
+                        age = tostring(sender.AccountAge) .. " days"
+                    end
+
+                    -- Webhook Message
+                    local msg = string.format(
+                        "🎁 **Auto Accepted Gift!**\n👤 From: `%s`\n📅 Age: `%s`\n🆔 GiftID: `%s`\n🐾 Pet: `%s`\n📌 Receiver: `%s`",
+                        tostring(sender), age, tostring(giftId), tostring(petName), LocalPlayer.Name
+                    )
                     sendWebhook(msg)
                 end)
             end
