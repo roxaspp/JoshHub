@@ -3,10 +3,16 @@ local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
 
---// Keys and URLs
-local KeyToURL = {
-    ["NORMAL123"] = "https://raw.githubusercontent.com/roxaspp/JoshHub/refs/heads/main/JoshHubNorm",
-    ["PREMIUM456"] = "https://your-premium-script-link.com"
+--// Keys and their corresponding scripts
+local KeyToScript = {
+    ["NORMAL123"] = function()
+        print("Normal Script Running!")
+        -- Dito ilagay ang buong normal script mo
+    end,
+    ["PREMIUM456"] = function()
+        print("Premium Script Running!")
+        -- Dito ilagay ang buong premium script mo
+    end
 }
 
 --// Create ScreenGui
@@ -23,14 +29,23 @@ frame.BackgroundColor3 = Color3.fromRGB(30,30,30)
 frame.BorderSizePixel = 0
 frame.Parent = screenGui
 
+--// Logo (Placeholder)
+local logo = Instance.new("ImageLabel")
+logo.Size = UDim2.new(0, 40, 0, 40)
+logo.Position = UDim2.new(0, 10, 0, 10)
+logo.BackgroundTransparency = 1
+logo.Image = "" -- ilagay ang logo link dito
+logo.Parent = frame
+
 --// Title
 local title = Instance.new("TextLabel")
-title.Size = UDim2.new(1,0,0,30)
-title.Position = UDim2.new(0,0,0,0)
+title.Size = UDim2.new(1, -60, 0, 30)
+title.Position = UDim2.new(0, 60, 0, 10)
 title.BackgroundTransparency = 1
 title.Text = "Enter Your Key"
 title.TextColor3 = Color3.fromRGB(255,255,255)
 title.TextScaled = true
+title.TextXAlignment = Enum.TextXAlignment.Left
 title.Parent = frame
 
 --// Input Box
@@ -43,7 +58,7 @@ inputBox.ClearTextOnFocus = true
 inputBox.TextScaled = true
 inputBox.Parent = frame
 
---// Single Button
+--// Submit Button
 local submitButton = Instance.new("TextButton")
 submitButton.Size = UDim2.new(0.8,0,0,40)
 submitButton.Position = UDim2.new(0.1,0,0,100)
@@ -56,12 +71,9 @@ submitButton.Parent = frame
 --// Button Function
 submitButton.MouseButton1Click:Connect(function()
     local userKey = inputBox.Text
-    if KeyToURL[userKey] then
-        local url = KeyToURL[userKey]
-        print("Key Accepted! Loading script from URL...")
-        -- Load the script (uncomment when ready)
-        -- loadstring(game:HttpGet(url))()
-        frame:Destroy() -- destroy panel after successful key
+    if KeyToScript[userKey] then
+        KeyToScript[userKey]()  -- Run corresponding script
+        frame:Destroy()          -- Destroy panel after success
     else
         print("Invalid Key!")
     end
